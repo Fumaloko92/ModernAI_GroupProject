@@ -5,9 +5,8 @@ using System.Collections.Generic;
 public class GatheringPlace : MonoBehaviour {
     private List<Resource> resources;
 
-	// Use this for initialization
-	void Start () {
-	
+	void Awake () {
+        resources = new List<Resource>(GetComponentsInChildren<Resource>());
 	}
 	
 	// Update is called once per frame
