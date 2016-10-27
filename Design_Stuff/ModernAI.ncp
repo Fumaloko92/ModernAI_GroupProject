@@ -14,31 +14,31 @@
         <Member type="Field">int maxGenerations</Member>
         <Member type="Field">int generation</Member>
         <Member type="Field">List&lt;AIController&gt; population</Member>
-        <Member type="Field">Enum states</Member>
+        <Member type="Field">State currentState</Member>
         <Member type="Field">private World currentWorld</Member>
-        <Member type="Method">public void generateWorld()</Member>
-        <Member type="Method">public void initializePopulation()</Member>
-        <Member type="Method">public void run()</Member>
-        <Member type="Method">public void evaluate()</Member>
+        <Member type="Method">public void GenerateWorld()</Member>
+        <Member type="Method">public void InitializePopulation()</Member>
+        <Member type="Method">public void Run()</Member>
+        <Member type="Method">public void Evaluate()</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>AIController</Name>
         <Access>Public</Access>
         <Location left="3006" top="1477" />
-        <Size width="162" height="216" />
+        <Size width="217" height="216" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected Behavior currentBehavior</Member>
-        <Member type="Field">protected List&lt;Resource&gt; resources</Member>
+        <Member type="Field">protected List&lt;Resource&gt; collectedResources</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>Behavior</Name>
         <Access>Public</Access>
-        <Location left="3006" top="1843" />
+        <Location left="3006" top="1841" />
         <Size width="162" height="216" />
         <Collapsed>False</Collapsed>
-        <Modifier>None</Modifier>
+        <Modifier>Abstract</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>AggressiveBehavior</Name>
@@ -70,7 +70,7 @@
         <Location left="3717" top="1838" />
         <Size width="162" height="216" />
         <Collapsed>False</Collapsed>
-        <Modifier>None</Modifier>
+        <Modifier>Abstract</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>Food</Name>
@@ -106,6 +106,14 @@
         <Member type="Field">private Resource resources</Member>
         <Modifier>None</Modifier>
       </Entity>
+      <Entity type="Class">
+        <Name>State</Name>
+        <Access>Public</Access>
+        <Location left="2602" top="1098" />
+        <Size width="162" height="216" />
+        <Collapsed>False</Collapsed>
+        <Modifier>Abstract</Modifier>
+      </Entity>
     </Entities>
     <Relationships>
       <Relationship type="Association" first="0" second="1">
@@ -127,7 +135,7 @@
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="False">
           <X>3031</X>
-          <Y>2085</Y>
+          <Y>2083</Y>
         </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="3" second="2">
@@ -135,7 +143,7 @@
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="False">
           <X>3150</X>
-          <Y>2085</Y>
+          <Y>2083</Y>
         </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="4" second="2">
@@ -151,7 +159,7 @@
         </BendPoint>
         <BendPoint relativeToStartShape="False">
           <X>3088</X>
-          <Y>1818</Y>
+          <Y>1816</Y>
         </BendPoint>
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
@@ -172,7 +180,7 @@
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>3206</X>
+          <X>3261</X>
           <Y>1631</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
@@ -209,6 +217,14 @@
           <X>4319</X>
           <Y>1813</Y>
         </BendPoint>
+        <Direction>Unidirectional</Direction>
+        <AssociationType>Aggregation</AssociationType>
+      </Relationship>
+      <Relationship type="Association" first="0" second="11">
+        <Label>
+        </Label>
+        <StartOrientation>Horizontal</StartOrientation>
+        <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
       </Relationship>
