@@ -5,6 +5,11 @@ using System.Collections.Generic;
 public class Executor : MonoBehaviour {
     public GameObject WorldPrefab;
     public GameObject VillagerPrefab;
+    public GameObject PlaceholderPrefab;
+    public GameObject ConnectionValuePlaceholder;
+    public Material MaterialForDestination;
+    public int gridHeight;
+    public int gridWidth;
 
     private int populationCount;
     private int maxGenerations;
@@ -13,22 +18,19 @@ public class Executor : MonoBehaviour {
     private World currentWorld;
     private State currentState;
 
-	// Use this for initialization
-	void Awake () {
+    // Use this for initialization
+    void Awake()
+    {
         population = new List<AIController>();
         GenerateWorld();
         InitializePopulation();
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+    }
 
     public void GenerateWorld()
     {
         GameObject g = (GameObject)Instantiate(WorldPrefab, Vector3.zero, Quaternion.identity);
         currentWorld = g.GetComponent<World>();
+        currentWorld.InitializeGrid(gridHeight, gridWidth, PlaceholderPrefab, true);
     }
 
     public void InitializePopulation()
