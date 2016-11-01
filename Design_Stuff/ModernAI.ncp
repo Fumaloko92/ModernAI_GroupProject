@@ -7,7 +7,7 @@
       <Entity type="Class">
         <Name>Executor</Name>
         <Access>Public</Access>
-        <Location left="3006" top="1059" />
+        <Location left="3006" top="1056" />
         <Size width="162" height="247" />
         <Collapsed>False</Collapsed>
         <Member type="Field">private int populationCount</Member>
@@ -25,44 +25,17 @@
       <Entity type="Class">
         <Name>AIController</Name>
         <Access>Public</Access>
-        <Location left="3006" top="1477" />
+        <Location left="3006" top="1476" />
         <Size width="217" height="216" />
         <Collapsed>False</Collapsed>
-        <Member type="Field">protected Behavior currentBehavior</Member>
+        <Member type="Field">protected GameObject destination</Member>
+        <Member type="Field">protected Vector3 targetPosition</Member>
         <Member type="Field">protected List&lt;Resource&gt; collectedResources</Member>
-        <Modifier>None</Modifier>
-      </Entity>
-      <Entity type="Class">
-        <Name>Behavior</Name>
-        <Access>Public</Access>
-        <Location left="3006" top="1841" />
-        <Size width="162" height="216" />
-        <Collapsed>False</Collapsed>
+        <Member type="Field">protected NavMeshAgent myAgent</Member>
+        <Member type="Field">protected World world</Member>
+        <Member type="Method">protected void InitializeAgent()</Member>
+        <Member type="Method">public void InitWorld()</Member>
         <Modifier>Abstract</Modifier>
-      </Entity>
-      <Entity type="Class">
-        <Name>AggressiveBehavior</Name>
-        <Access>Public</Access>
-        <Location left="3215" top="2187" />
-        <Size width="162" height="216" />
-        <Collapsed>False</Collapsed>
-        <Modifier>None</Modifier>
-      </Entity>
-      <Entity type="Class">
-        <Name>GatheringBehavior</Name>
-        <Access>Public</Access>
-        <Location left="3006" top="2187" />
-        <Size width="162" height="216" />
-        <Collapsed>False</Collapsed>
-        <Modifier>None</Modifier>
-      </Entity>
-      <Entity type="Class">
-        <Name>ExploringBehavior</Name>
-        <Access>Public</Access>
-        <Location left="2802" top="2187" />
-        <Size width="162" height="216" />
-        <Collapsed>False</Collapsed>
-        <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>Resource</Name>
@@ -95,6 +68,13 @@
         <Size width="259" height="216" />
         <Collapsed>False</Collapsed>
         <Member type="Field">private List&lt;GatheringPlaces&gt; gatheringPlaces</Member>
+        <Member type="Field">public int gridWidth</Member>
+        <Member type="Field">public int gridHeight</Member>
+        <Member type="Field">Vector3[,] grid</Member>
+        <Member type="Field">private GameObject terrain</Member>
+        <Member type="Property">public Vector3[,] Grid { get; set; }</Member>
+        <Member type="Method">internal void Awake()</Member>
+        <Member type="Method">private void InitializeGrid()</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
@@ -114,6 +94,101 @@
         <Collapsed>False</Collapsed>
         <Modifier>Abstract</Modifier>
       </Entity>
+      <Entity type="Class">
+        <Name>QLearningCore</Name>
+        <Access>Public</Access>
+        <Location left="2368" top="2055" />
+        <Size width="308" height="417" />
+        <Collapsed>False</Collapsed>
+        <Member type="Field">private GameObject connectionGameobject</Member>
+        <Member type="Field">private HashSet&lt;GameObject&gt; connectionsPlaceholders</Member>
+        <Member type="Field">private HashSet&lt;GameObject&gt; statesAvailable</Member>
+        <Member type="Field">private QTable&lt;Vector3&gt; qTable</Member>
+        <Member type="Field">private Executor executor</Member>
+        <Member type="Field">private bool initialized</Member>
+        <Member type="Field">private int count</Member>
+        <Member type="Method">private void Initialize()</Member>
+        <Member type="Method">private void RunQLearningLoop()</Member>
+        <Member type="Method">private GameObject FindClosestStateAvailable()</Member>
+        <Member type="Method">internal void OnTriggerEnter(Collider col)</Member>
+        <Member type="Method">internal void OnTriggerExit(Collider col)</Member>
+        <Member type="Method">private Vector3 GetNextState(Vector3 position)</Member>
+        <Member type="Method">private void UpdateConnectionPlaceholder(Vector3 from, Vector3 to, float value)</Member>
+        <Member type="Method">private float RewardFunction(Vector3 currentState, Vector3 nextState)</Member>
+        <Member type="Method">private void FindClosestStateAvailable()</Member>
+        <Member type="Method">internal void Awake()</Member>
+        <Member type="Method">internal void Start()</Member>
+        <Member type="Method">internal void FixedUpdate()</Member>
+        <Member type="Method">private GameObject FindClosestStateAvailable()</Member>
+        <Modifier>None</Modifier>
+      </Entity>
+      <Entity type="Class">
+        <Name>QTable&lt;T&gt;</Name>
+        <Access>Public</Access>
+        <Location left="2927" top="2085" />
+        <Size width="330" height="349" />
+        <Collapsed>False</Collapsed>
+        <Member type="Field">private float discountFactor</Member>
+        <Member type="Field">private float learningRate = 1</Member>
+        <Member type="Field">private Dictionary&lt;T, Dictionary&lt;T, float&gt;&gt; qValues</Member>
+        <Member type="Field">private NetworkGrid&lt;T&gt; statesTransitions</Member>
+        <Member type="Field">private Dictionary&lt;T, int&gt; visitedTimes</Member>
+        <Member type="Constructor">public QTable(T[,] matrix)</Member>
+        <Member type="Method">public T GetRandomState()</Member>
+        <Member type="Method">public T GetNextState(T currentState)</Member>
+        <Member type="Method">private int GetNumberOfConnectionExploredFromState(T from)</Member>
+        <Member type="Method">private void UpdateVisitedTimes(T to)</Member>
+        <Member type="Method">private T Explore(T currentState)</Member>
+        <Member type="Method">private T Exploit(T currentState)</Member>
+        <Member type="Method">public float GetCostFromStateToState(T from, T to)</Member>
+        <Member type="Method">public float UpdateQValues(T from, T to, float cost, float reward)</Member>
+        <Member type="Method">private float GetBestCostFromState(T from)</Member>
+        <Member type="Method">public string ToString()</Member>
+        <Modifier>None</Modifier>
+      </Entity>
+      <Entity type="Class">
+        <Name>NetworkGrid&lt;T&gt;</Name>
+        <Access>Public</Access>
+        <Location left="2838" top="2650" />
+        <Size width="417" height="216" />
+        <Collapsed>False</Collapsed>
+        <Member type="Field">private HashSet&lt;NetworkNode&lt;T&gt;&gt; nodes</Member>
+        <Member type="Constructor">public NetworkGrid()</Member>
+        <Member type="Method">public T GetRandomNodeContent()</Member>
+        <Member type="Constructor">public NetworkGrid(T[,] matrix)</Member>
+        <Member type="Method">public List&lt;NetworkNode&lt;T&gt;&gt; GetNodesConnectedFrom(NetworkNode&lt;T&gt; node)</Member>
+        <Member type="Method">public List&lt;T&gt; GetNodesConnectedFrom(T node)</Member>
+        <Modifier>None</Modifier>
+      </Entity>
+      <Entity type="Class">
+        <Name>NetworkNode&lt;T&gt;</Name>
+        <Access>Public</Access>
+        <Location left="2866" top="3046" />
+        <Size width="387" height="291" />
+        <Collapsed>False</Collapsed>
+        <Member type="Field">private T _value</Member>
+        <Member type="Field">private List&lt;NetworkNode&lt;T&gt;&gt; _connectedTo</Member>
+        <Member type="Property">public T Value { get; set; }</Member>
+        <Member type="Property">public List&lt;NetworkNode&lt;T&gt;&gt; ConnectedTo { get; }</Member>
+        <Member type="Constructor">public NetworkNode()</Member>
+        <Member type="Method">public void AddChild(NetworkNode&lt;T&gt; node)</Member>
+        <Member type="Method">public bool Equals(object o)</Member>
+        <Member type="Method">public bool Equals(NetworkNode&lt;T&gt; node)</Member>
+        <Member type="Method">public static bool operator ==(NetworkNode&lt;T&gt; n1, NetworkNode&lt;T&gt; n2)</Member>
+        <Member type="Method">public static bool operator !=(NetworkNode&lt;T&gt; n1, NetworkNode&lt;T&gt; n2)</Member>
+        <Member type="Method">public int GetHashCode()</Member>
+        <Modifier>None</Modifier>
+      </Entity>
+      <Entity type="Class">
+        <Name>StaticRandom</Name>
+        <Access>Public</Access>
+        <Location left="2176" top="1442" />
+        <Size width="162" height="216" />
+        <Collapsed>False</Collapsed>
+        <Member type="Field">static readonly System.Random random</Member>
+        <Member type="Method">public static int Rand(int f, int t)</Member>
+        <Modifier>Static</Modifier>
+      </Entity>
     </Entities>
     <Relationships>
       <Relationship type="Association" first="0" second="1">
@@ -121,54 +196,20 @@
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
           <X>3082</X>
-          <Y>1331</Y>
+          <Y>1328</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
           <X>3082</X>
-          <Y>1436</Y>
+          <Y>1435</Y>
         </BendPoint>
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
-      </Relationship>
-      <Relationship type="Generalization" first="5" second="2">
-        <StartOrientation>Vertical</StartOrientation>
-        <EndOrientation>Vertical</EndOrientation>
-        <BendPoint relativeToStartShape="False">
-          <X>3031</X>
-          <Y>2083</Y>
-        </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="3" second="2">
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
-        <BendPoint relativeToStartShape="False">
-          <X>3150</X>
-          <Y>2083</Y>
-        </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="4" second="2">
-        <StartOrientation>Vertical</StartOrientation>
-        <EndOrientation>Vertical</EndOrientation>
-      </Relationship>
-      <Relationship type="Association" first="1" second="2">
-        <StartOrientation>Vertical</StartOrientation>
-        <EndOrientation>Vertical</EndOrientation>
-        <BendPoint relativeToStartShape="True">
-          <X>3088</X>
-          <Y>1722</Y>
-        </BendPoint>
-        <BendPoint relativeToStartShape="False">
-          <X>3088</X>
-          <Y>1816</Y>
-        </BendPoint>
-        <Direction>Unidirectional</Direction>
-        <AssociationType>Aggregation</AssociationType>
-      </Relationship>
-      <Relationship type="Generalization" first="7" second="6">
-        <StartOrientation>Vertical</StartOrientation>
-        <EndOrientation>Vertical</EndOrientation>
-      </Relationship>
-      <Relationship type="Generalization" first="8" second="6">
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="False">
@@ -176,12 +217,12 @@
           <Y>2079</Y>
         </BendPoint>
       </Relationship>
-      <Relationship type="Association" first="1" second="6">
+      <Relationship type="Association" first="1" second="2">
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
           <X>3261</X>
-          <Y>1631</Y>
+          <Y>1630</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
           <X>3738</X>
@@ -190,12 +231,12 @@
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
       </Relationship>
-      <Relationship type="Association" first="0" second="9">
+      <Relationship type="Association" first="0" second="5">
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
           <X>3114</X>
-          <Y>1332</Y>
+          <Y>1329</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
           <X>4368</X>
@@ -204,13 +245,13 @@
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
       </Relationship>
-      <Relationship type="Association" first="10" second="6">
+      <Relationship type="Association" first="6" second="2">
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
       </Relationship>
-      <Relationship type="Association" first="9" second="10">
+      <Relationship type="Association" first="5" second="6">
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -220,13 +261,51 @@
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
       </Relationship>
-      <Relationship type="Association" first="0" second="11">
+      <Relationship type="Association" first="0" second="7">
         <Label>
         </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
+      </Relationship>
+      <Relationship type="Generalization" first="8" second="1">
+        <StartOrientation>Vertical</StartOrientation>
+        <EndOrientation>Horizontal</EndOrientation>
+        <BendPoint relativeToStartShape="False">
+          <X>2962</X>
+          <Y>1577</Y>
+        </BendPoint>
+      </Relationship>
+      <Relationship type="Association" first="8" second="9">
+        <StartOrientation>Horizontal</StartOrientation>
+        <EndOrientation>Horizontal</EndOrientation>
+        <Direction>Unidirectional</Direction>
+        <AssociationType>Aggregation</AssociationType>
+      </Relationship>
+      <Relationship type="Association" first="10" second="11">
+        <Label>
+        </Label>
+        <StartOrientation>Vertical</StartOrientation>
+        <EndOrientation>Vertical</EndOrientation>
+        <BendPoint relativeToStartShape="True">
+          <X>3032</X>
+          <Y>2925</Y>
+        </BendPoint>
+        <BendPoint relativeToStartShape="False">
+          <X>3032</X>
+          <Y>3021</Y>
+        </BendPoint>
+        <Direction>Unidirectional</Direction>
+        <AssociationType>Aggregation</AssociationType>
+      </Relationship>
+      <Relationship type="Association" first="9" second="10">
+        <Label>
+        </Label>
+        <StartOrientation>Vertical</StartOrientation>
+        <EndOrientation>Vertical</EndOrientation>
+        <Direction>Unidirectional</Direction>
+        <AssociationType>Composition</AssociationType>
       </Relationship>
     </Relationships>
   </ProjectItem>
