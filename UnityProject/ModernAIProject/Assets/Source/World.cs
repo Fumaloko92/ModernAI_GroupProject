@@ -92,7 +92,7 @@ public class World : MonoBehaviour {
             {
                 Vector3 v = new Vector3(i*step_i,0,k*step_k);
                 v += pos;
-                v.y = terrain.GetComponent<Terrain>().SampleHeight(v);
+                v.y = terrain.GetComponent<Terrain>().SampleHeight(v)+5;
                 GameObject g = (GameObject)Instantiate(placeholder, v,Quaternion.identity);
                 g.name = "[" + i + "," + k + "]";
                 grid[i, k] = g.transform.position;

@@ -8,7 +8,7 @@ public class QLearningCore : AIController
     private HashSet<GameObject> statesAvailable;
     private HashSet<GameObject> connectionsPlaceholders;
     private Executor executor;
-    private QTable<Vector3> qTable;
+    private static QTable<Vector3> qTable;
     private bool initialized;
     private int count;
     void Awake()
@@ -19,6 +19,7 @@ public class QLearningCore : AIController
         initialized = false;
         executor = GameObject.FindGameObjectWithTag("Executor").GetComponent<Executor>();
     }
+
     void Start()
     {
         InitializeAgent();
@@ -26,15 +27,11 @@ public class QLearningCore : AIController
         qTable = new QTable<Vector3>(world.Grid);
         count = 0;
         Initialize();
-        /*ThreadStart childref = new ThreadStart(RunQLearningLoop);
-        Thread childThread = new Thread(childref);
-        childThread.Start();*/
-        //  RunQLearningLoop();
     }
 
     private void Initialize()
     {
-        if (count<10 && statesAvailable.Count > 0)
+        if (count < 10 && statesAvailable.Count > 0)
         {
             targetResource = world.GetRandomResource(executor.MaterialForDestination);
 
@@ -69,7 +66,7 @@ public class QLearningCore : AIController
         Debug.Log("QLearningLoop finished!");
     }
 
-    void FixedUpdate()
+    private void MoveWithNavMeshAgent()
     {
         if (activeAgent)
         {
@@ -98,7 +95,35 @@ public class QLearningCore : AIController
                 }
             }
         }
-        //  Debug.Log(qTable.ToString());
+    }
+
+    private void MoveWithoutNavMeshAgent()
+    {
+        if (!initialized)
+            Initialize();
+        else
+        {
+            transform.position = destination;
+
+            Vector3 currentState = FindClosestStateAvailable().transform.position;
+            transform.position = currentState;
+            destination = GetNextState(currentState);
+            if (Mathf.Abs(Vector3.Distance(currentState, targetPosition)) < Mathf.Abs(Vector3.Distance(currentState, destination)))
+            {
+                count++;
+                initialized = false;
+                Initialize();
+                Debug.Log("Destination reached![" + count + "]");
+            }
+        }
+    }
+
+    void Update()
+    {
+        if (executor.testModeON)
+            MoveWithoutNavMeshAgent();
+        else
+            MoveWithNavMeshAgent();
     }
 
     private GameObject FindClosestStateAvailable()
@@ -165,6 +190,6 @@ public class QLearningCore : AIController
         newDistance = Mathf.Abs(Vector3.Distance(nextState, targetPosition));
         float reward;
         reward = (oldDistance - newDistance) / newDistance;
-        return reward* newDistance;
+        return reward * newDistance;
     }
 }
