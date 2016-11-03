@@ -24,18 +24,64 @@ public class World : MonoBehaviour {
         terrain = GameObject.FindGameObjectWithTag("Terrain");
     }
 
-    public Vector3 GetRandomFoodSource(Material destinationMaterial)
+    public Resource GetRandomResource(Material destinationMaterial)
     {
-        while (true) { 
+        bool resAvailable = false;
+
+        foreach (GatheringPlace place in gatheringPlaces)
+        {
+            foreach (Resource ress in place.GetComponentsInChildren<Resource>())
+            {
+                if (!ress.isTaken())
+                {
+                    resAvailable = true;
+                    break;
+                }
+            }
+            if(resAvailable)
+            {
+                break;
+            }
+        }
+
+        while (resAvailable) 
+        {
             foreach (GatheringPlace place in gatheringPlaces)
-                foreach (Food food in place.GetComponentsInChildren<Food>())
-                    if (Random.Range(0f, 1f) < 0.5) {
-                        food.gameObject.name = "Destination";
-                        food.GetComponent<MeshRenderer>().material = destinationMaterial;
-                        Vector3 pos = food.gameObject.transform.position;
-                        pos.y = Terrain.activeTerrain.SampleHeight(pos);
-                        return pos;
+            {
+                foreach (Resource ress in place.GetComponentsInChildren<Resource>())
+                {
+                    if (!ress.isTaken() && Random.Range(0f, 1f) < 0.5)
+                    {
+                        ress.gameObject.name = "Destination";
+                        ress.GetComponent<MeshRenderer>().material = destinationMaterial;
+
+                        return ress;
                     }
+                }
+            }
+        }
+
+        
+        return null;
+        
+    }
+
+    public void RemoveFromResourcePool(Resource resource)
+    {
+        foreach(GatheringPlace place in gatheringPlaces)
+        {
+            foreach(Resource ress in place.GetComponentsInChildren<Resource>())
+            {
+                if(ress.GetInstanceID().Equals(resource.GetInstanceID()))
+                {
+                    Debug.Log("removed resource: " + resource.GetInstanceID());
+                    resource.SetTaken(true);
+                    place.RemoveResource(resource);
+                    resource.gameObject.name = "Taken Resource";
+                    resource.GetComponent<MeshRenderer>().material.color = Color.red;
+                }
+            }
+
         }
     }
 
