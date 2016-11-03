@@ -8,12 +8,15 @@ public class NetworkGrid<T> {
 
     public T GetRandomNodeContent()
     {
-        while(true)
-        { 
+        int index = StaticRandom.Rand(0, nodes.Count);
+        int i = 0;
             foreach (NetworkNode<T> node in nodes)
-                if (StaticRandom.Rand(0, 100) < 50)
-                    return node.Value;
+        {
+            if (i == index)
+                return node.Value;
+            i++;
         }
+        return default(T);
     }
 
     public NetworkGrid()

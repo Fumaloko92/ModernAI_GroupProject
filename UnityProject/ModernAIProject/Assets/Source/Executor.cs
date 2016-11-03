@@ -10,8 +10,9 @@ public class Executor : MonoBehaviour {
     public Material MaterialForDestination;
     public int gridHeight;
     public int gridWidth;
+    public bool testModeON;
+    public int populationCount;
 
-    private int populationCount;
     private int maxGenerations;
     private int generation;
     private List<AIController> population;
@@ -35,9 +36,12 @@ public class Executor : MonoBehaviour {
 
     public void InitializePopulation()
     {
-        GameObject g = (GameObject)Instantiate(VillagerPrefab, Vector3.zero, Quaternion.identity);
-        g.GetComponent<AIController>().InitWorld(currentWorld);
-        population.Add(g.GetComponent<AIController>());
+        for (int i = 0; i < populationCount; i++)
+        {
+            GameObject g = (GameObject)Instantiate(VillagerPrefab, Vector3.zero, Quaternion.identity);
+            g.GetComponent<AIController>().InitWorld(currentWorld);
+            population.Add(g.GetComponent<AIController>());
+        }
     }
 
     public void Run()
