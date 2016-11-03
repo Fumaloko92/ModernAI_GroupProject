@@ -26,32 +26,27 @@ public class World : MonoBehaviour {
 
     public Resource GetRandomResource(Material destinationMaterial)
     {
-        bool resAvailable = AnyResourcesLeft(); //check if any resource is left in the world
+        List<Resource> availableRes = GetAvailableResources(); //get all available resources
 
-        while (resAvailable) 
+        if(availableRes.Count > 0)
         {
-            foreach (GatheringPlace place in gatheringPlaces)
-            {
-                foreach (Resource ress in place.GetComponentsInChildren<Resource>())
-                {
-                    if (!ress.isTaken() && Random.Range(0f, 1f) < 0.5)
-                    {
-                        ress.gameObject.name = "Destination";
-                        ress.GetComponent<MeshRenderer>().material = destinationMaterial;
+            Resource resource = availableRes[StaticRandom.Rand(0,availableRes.Count)];
 
-                        return ress;
-                    }
-                }
-            }
+            resource.gameObject.name = "Destination";
+            resource.GetComponent<MeshRenderer>().material = destinationMaterial;
+
+            return resource;
         }
-        
-        return null;
+        else
+        {
+            return null;
+        }
     }
 
-    //returns true if there is any resources left in the world
-    bool AnyResourcesLeft()
+    //gets all the resources which are still available
+    List<Resource> GetAvailableResources()
     {
-        bool resAvailable = false;
+        List<Resource> availableRes = new List<Resource>();
 
         foreach (GatheringPlace place in gatheringPlaces)
         {
@@ -59,16 +54,12 @@ public class World : MonoBehaviour {
             {
                 if (!ress.isTaken())
                 {
-                    resAvailable = true;
-                    break;
+                    availableRes.Add(ress);
                 }
             }
-            if (resAvailable)
-            {
-                break;
-            }
         }
-        return resAvailable;
+
+        return availableRes;
     }
     public void RemoveFromResourcePool(Resource resource)
     {
