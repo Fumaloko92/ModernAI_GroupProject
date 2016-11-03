@@ -26,23 +26,7 @@ public class World : MonoBehaviour {
 
     public Resource GetRandomResource(Material destinationMaterial)
     {
-        bool resAvailable = false;
-
-        foreach (GatheringPlace place in gatheringPlaces)
-        {
-            foreach (Resource ress in place.GetComponentsInChildren<Resource>())
-            {
-                if (!ress.isTaken())
-                {
-                    resAvailable = true;
-                    break;
-                }
-            }
-            if(resAvailable)
-            {
-                break;
-            }
-        }
+        bool resAvailable = AnyResourcesLeft(); //check if any resource is left in the world
 
         while (resAvailable) 
         {
@@ -60,12 +44,32 @@ public class World : MonoBehaviour {
                 }
             }
         }
-
         
         return null;
-        
     }
 
+    //returns true if there is any resources left in the world
+    bool AnyResourcesLeft()
+    {
+        bool resAvailable = false;
+
+        foreach (GatheringPlace place in gatheringPlaces)
+        {
+            foreach (Resource ress in place.GetComponentsInChildren<Resource>())
+            {
+                if (!ress.isTaken())
+                {
+                    resAvailable = true;
+                    break;
+                }
+            }
+            if (resAvailable)
+            {
+                break;
+            }
+        }
+        return resAvailable;
+    }
     public void RemoveFromResourcePool(Resource resource)
     {
         foreach(GatheringPlace place in gatheringPlaces)
