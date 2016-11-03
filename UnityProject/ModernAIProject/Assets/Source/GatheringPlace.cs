@@ -9,6 +9,10 @@ public class GatheringPlace : MonoBehaviour {
         resources = new List<Resource>(GetComponentsInChildren<Resource>());
 	}
 	
+    public void RemoveResource(Resource resource)
+    {
+        resources.Remove(resource);
+    }
 	// Update is called once per frame
 	void Update () {
 	

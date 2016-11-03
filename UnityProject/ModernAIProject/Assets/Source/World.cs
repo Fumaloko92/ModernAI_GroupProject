@@ -24,19 +24,59 @@ public class World : MonoBehaviour {
         terrain = GameObject.FindGameObjectWithTag("Terrain");
     }
 
-    public Vector3 GetRandomFoodSource(Material destinationMaterial)
+    public Resource GetRandomResource(Material destinationMaterial)
     {
-        while (true) { 
-            foreach (GatheringPlace place in gatheringPlaces)
-                foreach (Food food in place.GetComponentsInChildren<Food>())
-                    if (Random.Range(0f, 1f) < 0.5) {
-                        food.gameObject.name = "Destination";
-                        food.GetComponent<MeshRenderer>().material = destinationMaterial;
-                        Vector3 pos = food.gameObject.transform.position;
-                        pos.y = terrain.GetComponent<Terrain>().SampleHeight(pos) + 5;
-                        pos.y = Terrain.activeTerrain.SampleHeight(pos);
-                        return pos;
-                    }
+        List<Resource> availableRes = GetAvailableResources(); //get all available resources
+
+        if(availableRes.Count > 0)
+        {
+            Resource resource = availableRes[StaticRandom.Rand(0,availableRes.Count)];
+
+            resource.gameObject.name = "Destination";
+            resource.GetComponent<MeshRenderer>().material = destinationMaterial;
+
+            return resource;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    //gets all the resources which are still available
+    List<Resource> GetAvailableResources()
+    {
+        List<Resource> availableRes = new List<Resource>();
+
+        foreach (GatheringPlace place in gatheringPlaces)
+        {
+            foreach (Resource ress in place.GetComponentsInChildren<Resource>())
+            {
+                if (!ress.isTaken())
+                {
+                    availableRes.Add(ress);
+                }
+            }
+        }
+
+        return availableRes;
+    }
+    public void RemoveFromResourcePool(Resource resource)
+    {
+        foreach(GatheringPlace place in gatheringPlaces)
+        {
+            foreach(Resource ress in place.GetComponentsInChildren<Resource>())
+            {
+                if(ress.GetInstanceID().Equals(resource.GetInstanceID()))
+                {
+                    Debug.Log("removed resource: " + resource.GetInstanceID());
+                    resource.SetTaken(true);
+                    place.RemoveResource(resource);
+                    resource.gameObject.name = "Taken Resource";
+                    resource.GetComponent<MeshRenderer>().material.color = Color.red;
+                }
+            }
+
         }
     }
 

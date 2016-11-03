@@ -23,7 +23,7 @@ public class QLearningCore : AIController
     void Start()
     {
         InitializeAgent();
-        targetPosition = world.GetRandomFoodSource(executor.MaterialForDestination);
+        
         qTable = new QTable<Vector3>(world.Grid);
         count = 0;
         Initialize();
@@ -33,9 +33,19 @@ public class QLearningCore : AIController
     {
         if (count < 10 && statesAvailable.Count > 0)
         {
-            transform.position = qTable.GetRandomState();
-            destination = GetNextState(transform.position);
-            initialized = true;
+            targetResource = world.GetRandomResource(executor.MaterialForDestination);
+
+            if (targetResource != null)
+            {
+                targetPosition = targetResource.GetPositionInWorld();
+                transform.position = qTable.GetRandomState();
+                destination = GetNextState(transform.position);
+                initialized = true;
+            }
+            else
+            {
+                activeAgent = false;
+            }
         }
     }
     private void RunQLearningLoop()
@@ -58,25 +68,31 @@ public class QLearningCore : AIController
 
     private void MoveWithNavMeshAgent()
     {
-        if (!initialized)
-            Initialize();
-        else
+        if (activeAgent)
         {
-            myAgent.SetDestination(destination);
-            if (myAgent.remainingDistance < 0.05)
+            if (!initialized)
+                Initialize();
+            else
             {
-                Vector3 currentState = FindClosestStateAvailable().transform.position;
-                transform.position = currentState;
-                destination = GetNextState(currentState);
-                if (Mathf.Abs(Vector3.Distance(currentState, targetPosition)) < Mathf.Abs(Vector3.Distance(currentState, destination)))
+                myAgent.SetDestination(destination);
+                if (myAgent.remainingDistance < 0.05)
                 {
-                    count++;
-                    initialized = false;
-                    Initialize();
-                    Debug.Log("Destination reached![" + count + "]");
+                    Vector3 currentState = FindClosestStateAvailable().transform.position;
+                    transform.position = currentState;
+                    destination = GetNextState(currentState);
+                    if (Mathf.Abs(Vector3.Distance(currentState, targetPosition)) < Mathf.Abs(Vector3.Distance(currentState, destination)))
+                    {
+                        count++;
+
+                        collectedResources.Add(targetResource);
+                        world.RemoveFromResourcePool(targetResource);
+                        initialized = false;
+                        Initialize();
+                        Debug.Log("Destination reached![" + count + "]");
+                    }
+                    else
+                        myAgent.SetDestination(destination);
                 }
-                else
-                    myAgent.SetDestination(destination);
             }
         }
     }
