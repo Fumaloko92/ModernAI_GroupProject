@@ -25,14 +25,16 @@
       <Entity type="Class">
         <Name>AIController</Name>
         <Access>Public</Access>
-        <Location left="3006" top="1476" />
-        <Size width="217" height="216" />
+        <Location left="3006" top="1489" />
+        <Size width="217" height="230" />
         <Collapsed>False</Collapsed>
+        <Member type="Field">protected bool activeAgent</Member>
         <Member type="Field">protected GameObject destination</Member>
         <Member type="Field">protected Vector3 targetPosition</Member>
         <Member type="Field">protected List&lt;Resource&gt; collectedResources</Member>
         <Member type="Field">protected NavMeshAgent myAgent</Member>
         <Member type="Field">protected World world</Member>
+        <Member type="Field">protected Resource targetResource</Member>
         <Member type="Method">protected void InitializeAgent()</Member>
         <Member type="Method">public void InitWorld()</Member>
         <Modifier>Abstract</Modifier>
@@ -65,7 +67,7 @@
         <Name>World</Name>
         <Access>Public</Access>
         <Location left="4295" top="1838" />
-        <Size width="259" height="216" />
+        <Size width="334" height="247" />
         <Collapsed>False</Collapsed>
         <Member type="Field">private List&lt;GatheringPlaces&gt; gatheringPlaces</Member>
         <Member type="Field">public int gridWidth</Member>
@@ -75,6 +77,8 @@
         <Member type="Property">public Vector3[,] Grid { get; set; }</Member>
         <Member type="Method">internal void Awake()</Member>
         <Member type="Method">private void InitializeGrid()</Member>
+        <Member type="Method">public Resource GetRandomResource(Material destinationMaterial)</Member>
+        <Member type="Method">private List&lt;Resource&gt; GetAvailableResources()</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
@@ -192,6 +196,8 @@
     </Entities>
     <Relationships>
       <Relationship type="Association" first="0" second="1">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -200,7 +206,7 @@
         </BendPoint>
         <BendPoint relativeToStartShape="False">
           <X>3082</X>
-          <Y>1435</Y>
+          <Y>1448</Y>
         </BendPoint>
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
@@ -218,11 +224,13 @@
         </BendPoint>
       </Relationship>
       <Relationship type="Association" first="1" second="2">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
           <X>3261</X>
-          <Y>1630</Y>
+          <Y>1643</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
           <X>3738</X>
@@ -232,6 +240,8 @@
         <AssociationType>Aggregation</AssociationType>
       </Relationship>
       <Relationship type="Association" first="0" second="5">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -246,12 +256,16 @@
         <AssociationType>Aggregation</AssociationType>
       </Relationship>
       <Relationship type="Association" first="6" second="2">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
       </Relationship>
       <Relationship type="Association" first="5" second="6">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -262,8 +276,6 @@
         <AssociationType>Aggregation</AssociationType>
       </Relationship>
       <Relationship type="Association" first="0" second="7">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -274,18 +286,18 @@
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="False">
           <X>2962</X>
-          <Y>1577</Y>
+          <Y>1590</Y>
         </BendPoint>
       </Relationship>
       <Relationship type="Association" first="8" second="9">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
       </Relationship>
       <Relationship type="Association" first="10" second="11">
-        <Label>
-        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -300,8 +312,6 @@
         <AssociationType>Aggregation</AssociationType>
       </Relationship>
       <Relationship type="Association" first="9" second="10">
-        <Label>
-        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>
