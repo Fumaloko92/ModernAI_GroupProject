@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public abstract class AIController : MonoBehaviour {
-    protected bool activeAgent = true;
     protected NavMeshAgent myAgent;
     protected World world;
     protected List<Resource> collectedResources;

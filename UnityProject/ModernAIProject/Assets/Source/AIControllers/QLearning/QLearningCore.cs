@@ -8,7 +8,7 @@ public class QLearningCore : AIController
     private HashSet<GameObject> statesAvailable;
     private HashSet<GameObject> connectionsPlaceholders;
     private Executor executor;
-    private static QTable<Vector3> qTable;
+    private QTable<Vector3> qTable;
     private bool initialized;
     private int count;
     void Awake()
@@ -23,8 +23,10 @@ public class QLearningCore : AIController
     void Start()
     {
         InitializeAgent();
-        
+
         qTable = new QTable<Vector3>(world.Grid);
+        Vector3 p = qTable.GetRandomState();
+        GetComponent<SphereCollider>().radius = Mathf.Abs(Vector3.Distance(p,qTable.GetNextState(p)))/((transform.localScale.x+transform.localScale.y+transform.localScale.z)/3-1f);
         count = 0;
         Initialize();
     }
@@ -38,13 +40,9 @@ public class QLearningCore : AIController
             if (targetResource != null)
             {
                 targetPosition = targetResource.GetPositionInWorld();
-                transform.position = qTable.GetRandomState();
-                destination = GetNextState(transform.position);
+                Vector3 p = qTable.GetRandomState();
+                transform.position = p;
                 initialized = true;
-            }
-            else
-            {
-                activeAgent = false;
             }
         }
     }
@@ -68,31 +66,28 @@ public class QLearningCore : AIController
 
     private void MoveWithNavMeshAgent()
     {
-        if (activeAgent)
+        if (!initialized)
+            Initialize();
+        else
         {
-            if (!initialized)
-                Initialize();
-            else
+            myAgent.SetDestination(destination);
+            if (myAgent.remainingDistance < 0.05)
             {
-                myAgent.SetDestination(destination);
-                if (myAgent.remainingDistance < 0.05)
+                Vector3 currentState = FindClosestStateAvailable().transform.position;
+                transform.position = currentState;
+                destination = GetNextState(currentState);
+                if (Mathf.Abs(Vector3.Distance(currentState, targetPosition)) < Mathf.Abs(Vector3.Distance(currentState, destination)))
                 {
-                    Vector3 currentState = FindClosestStateAvailable().transform.position;
-                    transform.position = currentState;
-                    destination = GetNextState(currentState);
-                    if (Mathf.Abs(Vector3.Distance(currentState, targetPosition)) < Mathf.Abs(Vector3.Distance(currentState, destination)))
-                    {
-                        count++;
+                    count++;
 
-                        collectedResources.Add(targetResource);
-                        world.RemoveFromResourcePool(targetResource);
-                        initialized = false;
-                        Initialize();
-                        Debug.Log("Destination reached![" + count + "]");
-                    }
-                    else
-                        myAgent.SetDestination(destination);
+                    collectedResources.Add(targetResource);
+                    world.RemoveFromResourcePool(targetResource);
+                    initialized = false;
+                    Initialize();
+                    Debug.Log("Destination reached![" + count + "]");
                 }
+                else
+                    myAgent.SetDestination(destination);
             }
         }
     }
@@ -103,11 +98,10 @@ public class QLearningCore : AIController
             Initialize();
         else
         {
-            transform.position = destination;
-
             Vector3 currentState = FindClosestStateAvailable().transform.position;
-            transform.position = currentState;
+            currentState.y = 0;
             destination = GetNextState(currentState);
+            transform.position = destination;
             if (Mathf.Abs(Vector3.Distance(currentState, targetPosition)) < Mathf.Abs(Vector3.Distance(currentState, destination)))
             {
                 count++;
@@ -157,7 +151,7 @@ public class QLearningCore : AIController
     {
         Vector3 nextState = qTable.GetNextState(position);
         qTable.UpdateQValues(position, nextState, 1, RewardFunction(position, nextState));
-        UpdateConnectionPlaceholder(position, nextState, qTable.GetCostFromStateToState(position, nextState));
+        //UpdateConnectionPlaceholder(position, nextState, qTable.GetCostFromStateToState(position, nextState));
         return nextState;
     }
 
@@ -189,7 +183,7 @@ public class QLearningCore : AIController
         oldDistance = Mathf.Abs(Vector3.Distance(currentState, targetPosition));
         newDistance = Mathf.Abs(Vector3.Distance(nextState, targetPosition));
         float reward;
-        reward = (oldDistance - newDistance) / newDistance;
-        return reward * newDistance;
+        reward = (oldDistance - newDistance);
+        return reward;
     }
 }
