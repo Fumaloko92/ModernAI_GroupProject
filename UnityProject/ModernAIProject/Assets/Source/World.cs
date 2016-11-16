@@ -5,19 +5,6 @@ using System.Collections.Generic;
 public class World : MonoBehaviour {
     private List<GatheringPlace> gatheringPlaces;
     private GameObject terrain;
-    private Vector3[,] grid;
-
-    public Vector3[,] Grid
-    {
-        get
-        {
-            return grid;
-        }
-        private set
-        {
-            grid = value;
-        }
-    }
 
     void Awake () {
         gatheringPlaces = new List<GatheringPlace>(GetComponentsInChildren<GatheringPlace>());
@@ -61,6 +48,25 @@ public class World : MonoBehaviour {
 
         return availableRes;
     }
+
+    public bool resourcesAvailable()
+    {
+        bool available = false;
+
+        foreach (GatheringPlace place in gatheringPlaces)
+        {
+            foreach (Resource ress in place.GetComponentsInChildren<Resource>())
+            {
+                if (!ress.isTaken())
+                {
+                    available = true;
+                    break;
+                }
+            }
+        }
+
+        return available;
+    }
     public void RemoveFromResourcePool(Resource resource)
     {
         foreach(GatheringPlace place in gatheringPlaces)
@@ -69,36 +75,22 @@ public class World : MonoBehaviour {
             {
                 if(ress.GetInstanceID().Equals(resource.GetInstanceID()))
                 {
+                    //remove resource from world - disabled for testing purposes
+                    /*
                     Debug.Log("removed resource: " + resource.GetInstanceID());
                     resource.SetTaken(true);
                     place.RemoveResource(resource);
                     resource.gameObject.name = "Taken Resource";
                     resource.GetComponent<MeshRenderer>().material.color = Color.red;
+
+                    //testing
+                    Destroy(resource.gameObject);*/
                 }
             }
 
         }
     }
 
-    public void InitializeGrid(int gridHeight, int gridWidth, GameObject placeholder, bool visible)
-    {
-        grid = new Vector3[gridHeight,gridWidth];
-        Vector3 pos = terrain.transform.position;
-        
-        float step_i = terrain.GetComponent<Terrain>().terrainData.size.z / (gridHeight-1);
-        float step_k = terrain.GetComponent<Terrain>().terrainData.size.x / (gridWidth-1);
-        for(int i=0;i<gridHeight;i++)
-            for(int k=0;k<gridWidth;k++)
-            {
-                Vector3 v = new Vector3(i*step_i,0,k*step_k);
-                v += pos;
-                v.y = terrain.GetComponent<Terrain>().SampleHeight(v);
-                GameObject g = (GameObject)Instantiate(placeholder, v,Quaternion.identity);
-                g.name = "[" + i + "," + k + "]";
-                grid[i, k] = g.transform.position;
-                if (!visible)
-                    g.GetComponent<Renderer>().enabled = false;
-            }
-    }
+    
 }
 

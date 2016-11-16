@@ -4,43 +4,43 @@ using System.Collections.Generic;
 
 public class QTable<T>
 {
-    private NetworkGrid<T> statesTransitions;
+    //private NetworkGrid<T> statesTransitions;
     private Dictionary<T, Dictionary<T, float>> qValues;
     private Dictionary<T, int> visitedTimes;
     private float learningRate = 1;
     private float discountFactor = 0.95f;
 
-    public QTable(T[,] matrix)
-    {
-        visitedTimes = new Dictionary<T, int>();
-        statesTransitions = new NetworkGrid<T>(matrix);
-        qValues = new Dictionary<T, Dictionary<T, float>>();
-    }
+    //private Executor executor;
+    private AIController agent;
 
-    public T GetRandomState()
+    public QTable(AIController agent)
     {
-        return statesTransitions.GetRandomNodeContent();
+        this.agent = agent;
+        visitedTimes = new Dictionary<T, int>();
+        //statesTransitions = new NetworkGrid<T>(matrix);
+
+        qValues = new Dictionary<T, Dictionary<T, float>>();
     }
 
     public T GetNextState(T currentState)
     {
         T to;
-        //Explore if it's the first time that you visit this state
+        //Explore if it's the firsState time thaState you visiState this state
         if (!qValues.ContainsKey(currentState))
         {
             to = Explore(currentState);
             UpdateVisitedTimes(to);
             return to;
         }
-        //Exploit if you explored all the possible action/states from this state
-        if (GetNumberOfConnectionExploredFromState(currentState) == statesTransitions.GetNodesConnectedFrom(currentState).Count)
+        //ExploiState if you explored all the possible action/states from this state
+        if (GetNumberOfConnectionExploredFromState(currentState) == agent.GetStatesCount())//statesTransitions.GetNodesConnectedFrom(currentState).Count)
         {
             to = Exploit(currentState);
             UpdateVisitedTimes(to);
             return to;
         }
         //Explore if a random number between 0 and 100 is less than a number which increases the less connections from the currentState have been explored
-        if (StaticRandom.Rand(0, 10000) % 101 < (1 - GetNumberOfConnectionExploredFromState(currentState) / statesTransitions.GetNodesConnectedFrom(currentState).Count) * 100)
+        if (StaticRandom.Rand(0, 10000) % 101 < (1 - GetNumberOfConnectionExploredFromState(currentState) / agent.GetStatesCount()) * 100)
         {
             to = Explore(currentState);
             UpdateVisitedTimes(to);
@@ -76,14 +76,20 @@ public class QTable<T>
 
     private T Explore(T currentState)
     {
-        List<T> l = statesTransitions.GetNodesConnectedFrom(currentState);
+        //get all states
+        List<T> l = agent.GetStates() as List<T>;// statesTransitions.GetNodesConnectedFrom(currentState);
+
+
         List<T> toVisit = new List<T>();
         if (!qValues.ContainsKey(currentState))
         {
-            toVisit = new List<T>(statesTransitions.GetNodesConnectedFrom(currentState));
+            //if current state doesn't exist in the q table, then choose a random state as next state
+            toVisit = agent.GetStates() as List<T>;//statesTransitions.GetNodesConnectedFrom(currentState));
             return toVisit[StaticRandom.Rand(0, toVisit.Count)];
         }
-        foreach (T node in statesTransitions.GetNodesConnectedFrom(currentState))
+        List<T> list = agent.GetStates() as List<T>;
+        //otherwise choose random of states that hasn't been visited yet
+        foreach (T node in list)//statesTransitions.GetNodesConnectedFrom(currentState))
             if (!qValues[currentState].ContainsKey(node))
                 toVisit.Add(node);
 
