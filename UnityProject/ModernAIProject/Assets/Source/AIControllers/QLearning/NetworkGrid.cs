@@ -3,8 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-public class NetworkGrid<
-    T>
+public class NetworkGrid<T>
 {
     private Dictionary<int, NetworkNode<T>> nodes;
 
@@ -29,18 +28,27 @@ public class NetworkGrid<
     public NetworkGrid(T[,] matrix)
     {
         nodes = new Dictionary<int, NetworkNode<T>>();
+
         for (int i = 0; i < matrix.GetLength(0); i++)
+        {
             for (int k = 0; k < matrix.GetLength(1); k++)
             {
                 NetworkNode<T> node = new NetworkNode<T>(matrix[i, k]);
+
                 for (int i1 = i - 1; i1 < i + 2; i1++)
+                {
                     for (int k1 = k - 1; k1 < k + 2; k1++)
                     {
                         if (i1 >= 0 && i1 < matrix.GetLength(0) && k1 >= 0 && k1 < matrix.GetLength(1) && !matrix[i, k].Equals(matrix[i1, k1]))
+                        {
                             node.AddChild(new NetworkNode<T>(matrix[i1, k1]));
+                        }
                     }
+                }
+
                 nodes[node.GetHashCode()] = node;
             }
+        }
     }
 
     public List<NetworkNode<T>> GetNodesConnectedFrom(NetworkNode<T> node)
