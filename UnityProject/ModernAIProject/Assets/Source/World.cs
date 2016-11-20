@@ -94,6 +94,7 @@ public class World : MonoBehaviour {
                 v += pos;
                 v.y = terrain.GetComponent<Terrain>().SampleHeight(v);
                 GameObject g = (GameObject)Instantiate(placeholder, v,Quaternion.identity);
+                g.tag = "GridPoint";
                 g.name = "[" + i + "," + k + "]";
                 grid[i, k] = g.transform.position;
                 if (!visible)

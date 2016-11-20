@@ -26,7 +26,7 @@ public class QLearningCore : AIController
 
         qTable = new QTable<Vector3>(world.Grid);
         Vector3 p = qTable.GetRandomState();
-        GetComponent<SphereCollider>().radius = Mathf.Abs(Vector3.Distance(p,qTable.GetNextState(p)))/((transform.localScale.x+transform.localScale.y+transform.localScale.z)/3-1f);
+        GetComponent<SphereCollider>().radius = Mathf.Abs(Vector3.Distance(p, qTable.GetNextState(p))) / ((transform.localScale.x + transform.localScale.y + transform.localScale.z) / 3 - 1f);
         count = 0;
         Initialize();
     }
@@ -138,13 +138,15 @@ public class QLearningCore : AIController
 
     void OnTriggerEnter(Collider col)
     {
-        statesAvailable.Add(col.gameObject);
+        if (col.gameObject.tag == "GridPoint")
+            statesAvailable.Add(col.gameObject);
     }
 
 
     void OnTriggerExit(Collider col)
     {
-        statesAvailable.Remove(col.gameObject);
+        if (col.gameObject.tag == "GridPoint")
+            statesAvailable.Remove(col.gameObject);
     }
 
     private Vector3 GetNextState(Vector3 position)
