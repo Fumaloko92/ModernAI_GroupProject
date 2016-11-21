@@ -14,6 +14,8 @@ public class Executor : MonoBehaviour {
     private List<AIController> population;
     private World currentWorld;
 
+    public bool runInBackground = false;
+
     // Use this for initialization
     void Awake()
     {
@@ -46,8 +48,10 @@ public class Executor : MonoBehaviour {
             //name the villager with it's instance ID, so we can identify it in the console view
             g.name = "Villager [" + g.GetInstanceID()+"]";
 
-            g.GetComponent<AIController>().InitWorld(currentWorld);
-            population.Add(g.GetComponent<AIController>());
+            AIController aiControl = g.GetComponent<AIController>();
+
+            aiControl.InitWorld(currentWorld);
+            population.Add(aiControl);
         }
     }
 
