@@ -5,9 +5,8 @@ using System;
 public interface IGenotype : IComparer
 {
     IGenotype GenerateRandomly();
-
     IGenotype Clone();
-
+    IEvaluator Evaluator { get; set; }
     void Mutate();
     float GetFitness();
     void SetFitness(float value);
@@ -22,6 +21,7 @@ public interface IGenotype<T, K,A,A1> : IGenotype, IEquatable<IGenotype<T, K,A,A
     T NodesGenotype { get; }
     K ConnectionsGenotype { get; }
     new IGenotype<T, K,A,A1> GenerateRandomly();
+    new IEvaluator Evaluator { get; set; }
     new void Mutate();
     new float GetFitness();
     new void SetFitness(float value);

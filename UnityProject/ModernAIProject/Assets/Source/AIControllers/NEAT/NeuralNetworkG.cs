@@ -2,11 +2,14 @@
 using System.Collections;
 using System;
 
-public class NeuralNetworkG<T, K, A, A1> : IGenotype where T : INodeRepresentation, new() where K : IConnectionRepresentation, new()
-    where A : IActivationFunction, new() where A1 : IActivationFunction, new()
+public class NeuralNetworkG<T, K, A, A1, E> : IGenotype where T : INodeRepresentation, new() where K : IConnectionRepresentation, new()
+    where A : IActivationFunction, new() where A1 : IActivationFunction, new() where E : IEvaluator, new()
 {
     private T nodesGenotype;
     private K connectionsGenotype;
+    private E evaluator;
+    public IEvaluator Evaluator { get { return evaluator; } set { evaluator = (E)value; } }
+
     private float fitness;
 
     public NeuralNetworkG()
@@ -27,7 +30,7 @@ public class NeuralNetworkG<T, K, A, A1> : IGenotype where T : INodeRepresentati
     public IGenotype GenerateRandomly()
     {
 
-        NeuralNetworkG<T, K, A, A1> genotype = new NeuralNetworkG<T, K, A, A1>();
+        NeuralNetworkG<T, K, A, A1,E> genotype = new NeuralNetworkG<T, K, A, A1,E>();
         try
         {
             genotype.nodesGenotype = new T();
@@ -87,7 +90,7 @@ public class NeuralNetworkG<T, K, A, A1> : IGenotype where T : INodeRepresentati
 
     public IGenotype Clone()
     {
-        NeuralNetworkG<T, K, A, A1> c = new NeuralNetworkG<T, K, A, A1>();
+        NeuralNetworkG<T, K, A, A1,E> c = new NeuralNetworkG<T, K, A, A1,E>();
         c.nodesGenotype = (T)nodesGenotype.Clone();
         c.connectionsGenotype = (K)connectionsGenotype.Clone();
         return c;
@@ -97,8 +100,7 @@ public class NeuralNetworkG<T, K, A, A1> : IGenotype where T : INodeRepresentati
     {
         try {
             NeuralNetwork<Sigmoid, Sigmoid> phenotype = GetPhenotype();
-            phenotype.ExecuteNetwork();
-            fitness = 1;
+            fitness = Evaluator.Evaluate(phenotype.ExecuteNetwork());
         }catch(Exception e)
         {
             Debug.Log(e.ToString());
