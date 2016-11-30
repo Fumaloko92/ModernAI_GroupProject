@@ -32,6 +32,12 @@ public class NeuralNetwork<T, K> where T : IActivationFunction, new() where K : 
         FromStringToConnections(connections);
     }
 
+    public void SetData(int nodeID, double val)
+    {
+        if (nodes.ContainsKey(nodeID.GetHashCode()))
+            nodes[nodeID].Value = val;
+    }
+
     private void FromArrayToNodes(int[] inputNodes, int[] outputNodes, int[] hiddenNodes)
     {
 
@@ -58,12 +64,21 @@ public class NeuralNetwork<T, K> where T : IActivationFunction, new() where K : 
 
     private void FromStringToConnections(string connections)
     {
-        string[] cons = connections.Split(',');
-        foreach (string connection in cons)
-        {
-            string[] details = connection.Split('*');
-            AddConnection(int.Parse(details[0]), int.Parse(details[2]), double.Parse(details[1]));
+        
+            string[] cons = connections.Split(',');
+            foreach (string connection in cons)
+            {
+                string[] details = connection.Split('*');
+            try
+            {
+                AddConnection(int.Parse(details[0]), int.Parse(details[2]), double.Parse(details[1]));
+            }
+            catch (Exception e)
+            {
+                Debug.Log(connection);
+            }
         }
+       
     }
 
     private void AddNode(Node node)

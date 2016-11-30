@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public abstract class AIController : MonoBehaviour {
@@ -12,19 +13,19 @@ public abstract class AIController : MonoBehaviour {
     //states
     protected State previousState = null;
     protected State currentState = null;
-
     protected List<State> states; //list of possible states
-
     protected QTable<State> qTable;
     protected bool initialized;
     protected int count;
 
     //health
-    protected float maxHealth = 1;
-    protected float health = 1;
+    protected float maxHealth;
+    protected float health;
 
     protected void InitializeAgent()
     {
+        maxHealth = VillagerInfo.maxHealth;
+        health = VillagerInfo.health;
         myAgent = GetComponent<NavMeshAgent>();
         collectedResources = new List<Resource>();
 
@@ -189,4 +190,6 @@ public abstract class AIController : MonoBehaviour {
     {
         return health;
     }
+
+    public abstract float Evaluate(IDictionary<int, double> dict);
 }

@@ -20,7 +20,7 @@ public class StringNodeRepr : INodeRepresentation<string>
             nodes.Add(output);
 
         List<int> n = new List<int>();
-        while (StaticRandom.Rand(0, 101) / 100f < NEAT_Static.addNodeProbability)
+        while (StaticRandom.Sample() < NEAT_Static.randomlyGenerateNodeProbability)
         {
             int newId;
             while (true)
@@ -41,43 +41,37 @@ public class StringNodeRepr : INodeRepresentation<string>
         return hiddenNodes;
     }
 
-    public void RandomlyAddNode()
+    public void RandomlyAddNode(IConnectionRepresentation connectionGenotype)
     {
-        List<int> n = new List<int>(hiddenNodes);
-        HashSet<int> nodes = new HashSet<int>();
-        foreach (string token in this.nodes.Split(','))
-            nodes.Add(int.Parse(token));
-        while (StaticRandom.Sample() < NEAT_Static.addNodeProbability)
+        if(StaticRandom.Sample() < NEAT_Static.addNodeProbability)
         {
+            List<int> n = new List<int>(hiddenNodes);
+            HashSet<int> nodes = new HashSet<int>();
+            foreach (string token in this.nodes.Split(','))
+                nodes.Add(int.Parse(token));
             int newId;
             while (true)
             {
                 newId = (int)(StaticRandom.Sample() * int.MaxValue);
                 if (!nodes.Contains(newId))
                     break;
-            }
-            nodes.Add(newId);
+            }      
             n.Add(newId);
+            hiddenNodes = n.ToArray();
+            nodes.Add(newId);
+            string con = connectionGenotype.GetRandomConnection();
+            string[] tokens = con.Split('*');
+            int from = int.Parse(tokens[0]);
+            float weight = float.Parse(tokens[1]);
+            int to = int.Parse(tokens[2]);
+            connectionGenotype.AddSplitConnection(from, newId, to, weight);
+            UpdateNodesFromCollection(nodes);
         }
-        hiddenNodes = n.ToArray();
-        UpdateNodesFromCollection(nodes);
+
+       
+        
     }
 
-    public void RandomlyDeleteNode()
-    {
-        HashSet<int> nodes = new HashSet<int>();
-        foreach (string token in this.nodes.Split(','))
-            nodes.Add(int.Parse(token));
-        List<int> n = new List<int>(hiddenNodes);
-        for (int i = n.Count - 1; i >= 0; i--)
-            if (StaticRandom.Sample() < NEAT_Static.deleteNodeProbability)
-            {
-                nodes.Remove(n[i]);
-                n.RemoveAt(i);
-            }
-        hiddenNodes = n.ToArray();
-        UpdateNodesFromCollection(nodes);
-    }
     private void UpdateNodesFromCollection(ICollection<int> nodes)
     {
         this.nodes = "";

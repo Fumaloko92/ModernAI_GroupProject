@@ -15,5 +15,7 @@ public interface IEvaluator
     /// <param name="multipliers">The multipliers that are going to be used for the evaluation</param>
     /// <returns>Returns a value that determines how well the element performed</returns>
     float Evaluate(IDictionary<int,double> multipliers);
+
+    void InitWorld(ThreadSafe.World world);
 }
 

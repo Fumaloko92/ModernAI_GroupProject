@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using System.Collections.Generic;
 
 public interface IGenotype : IComparer
 {
@@ -10,7 +11,7 @@ public interface IGenotype : IComparer
     void Mutate();
     float GetFitness();
     void SetFitness(float value);
-    void RunAndEvaluate();
+    void RunAndEvaluate(Dictionary<int, double> inputValues, ThreadSafe.World world);
     NeuralNetwork<Sigmoid, Sigmoid> GetPhenotype();
 }
 
@@ -26,6 +27,6 @@ public interface IGenotype<T, K,A,A1> : IGenotype, IEquatable<IGenotype<T, K,A,A
     new float GetFitness();
     new void SetFitness(float value);
     new IGenotype<T, K,A,A1> Clone();
-    new void RunAndEvaluate();
+    new void RunAndEvaluate(Dictionary<int, double> inputValues, ThreadSafe.World world);
     new NeuralNetwork<Sigmoid, Sigmoid> GetPhenotype();
 }

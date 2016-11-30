@@ -12,7 +12,12 @@ public interface IConnectionRepresentation
 
     void UpdateConnections(INodeRepresentation nodes);
 
+    void AddSplitConnection(int from, int mid, int to, float weight);
+    string GetRandomConnection();
+    void RandomlyDeleteConnection();
     IConnectionRepresentation Clone();
+
+    bool IsEmpty();
 }
 
 public interface IConnectionRepresentation<T> : IEquatable<IConnectionRepresentation<T>>, IConnectionRepresentation
@@ -25,7 +30,14 @@ public interface IConnectionRepresentation<T> : IEquatable<IConnectionRepresenta
 
     new void RandomlyAddConnection();
 
+    new void RandomlyDeleteConnection();
     T ConnectionsRepresentation { get; }
 
+    new void AddSplitConnection(int from, int mid, int to, float weight);
+
+    new string GetRandomConnection();
+
     new IConnectionRepresentation<T> Clone();
+
+    new bool IsEmpty();
 }

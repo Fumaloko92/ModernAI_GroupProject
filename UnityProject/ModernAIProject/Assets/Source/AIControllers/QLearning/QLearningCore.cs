@@ -73,4 +73,38 @@ public class QLearningCore : AIController
             }
         }
     }
+    override public float Evaluate(IDictionary<int, double> multipliers)
+    {
+        AttackVillager av;
+        CollectResource clr;
+        ConsumeResource csr;
+        StealResource sr;
+        if (multipliers.ContainsKey(4))
+            av = new AttackVillager(executor, this, (float)multipliers[4]);
+        else
+            av = new AttackVillager(executor, this, 0);
+
+        if (multipliers.ContainsKey(5))
+            clr = new CollectResource(executor, world, this, (float)multipliers[5]);
+        else
+            clr = new CollectResource(executor, world, this, 0);
+
+        if (multipliers.ContainsKey(6))
+            csr = new ConsumeResource(this, (float)multipliers[6]);
+        else
+            csr = new ConsumeResource(this, 0);
+        //GiveResource gr = new GiveResource();
+        if (multipliers.ContainsKey(7))
+            sr = new StealResource(executor, this, (float)multipliers[7]);
+        else
+            sr = new StealResource(executor, this, 0);
+
+        states = new List<State>();
+        states.Add(av);
+        states.Add(clr);
+        states.Add(csr);
+        //states.Add(gr);
+        states.Add(sr);
+        return execute();
+    }
 }
