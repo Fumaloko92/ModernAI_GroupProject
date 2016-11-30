@@ -144,7 +144,7 @@ public class NEAT<T> where T : IGenotype, new()
 
     private void NeatInnerEvolvingLoop(T elem)
     {
-        //elem.Mutate();
+        elem.Mutate();
         lock (next_generation)
         {
             next_generation.Add(elem);

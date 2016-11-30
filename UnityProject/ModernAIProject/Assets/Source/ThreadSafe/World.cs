@@ -8,17 +8,17 @@ namespace ThreadSafe
 {
     public class World
     {
-        private List<Resource> ressources = new List<Resource>();
-        public void setRessources(List<Resource> resss)
-        {           
-            this.ressources = resss;
+        private List<Resource> resources = new List<Resource>();
+        public void setResources(List<Resource> resources)
+        {
+            this.resources = resources;
         }
 
         public World(List<Vector3> resourcePositions)
         {
             foreach(Vector3 pos in resourcePositions)
             {
-                ressources.Add(new Resource(pos));
+                resources.Add(new Resource(pos));
             }
         }
         World()
@@ -47,7 +47,7 @@ namespace ThreadSafe
         {
             List<Resource> availableRes = new List<Resource>();
 
-            foreach (Resource ress in ressources)
+            foreach (Resource ress in resources)
             {
                 if (!ress.isTaken())
                 {
@@ -62,7 +62,7 @@ namespace ThreadSafe
         {
             bool available = false;
 
-            foreach (Resource ress in ressources)
+            foreach (Resource ress in resources)
             {
                 if (!ress.isTaken())
                 {
@@ -75,7 +75,7 @@ namespace ThreadSafe
         }
         public void RemoveFromResourcePool(Resource resource)
         {
-            foreach (Resource ress in ressources)
+            foreach (Resource ress in resources)
             {
                 if (ress.GetHashCode().Equals(resource.GetHashCode()))
                 {
@@ -94,13 +94,13 @@ namespace ThreadSafe
         {
             World newWorld = new World();
 
-            List<Resource> newResources = ressources;
+            List<Resource> newResources = resources;
             foreach(Resource r in newResources)
             {
                 r.SetTaken(false);
             }
 
-            newWorld.setRessources(newResources);
+            newWorld.setResources(newResources);
             return newWorld;
         }
     }
