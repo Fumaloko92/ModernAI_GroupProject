@@ -33,7 +33,7 @@ namespace ThreadSafe
 
         public void InitWorld(World world)
         {
-            this.world = world;
+            this.world = world.cleanCopy();
         }
 
         //removes last resource from inventory and returns it
