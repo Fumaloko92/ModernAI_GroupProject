@@ -13,7 +13,6 @@ namespace ThreadSafe
             CollectResource clr;
             ConsumeResource csr;
 
-
             if (multipliers.ContainsKey(5))
                 clr = new CollectResource(world, this, (float)multipliers[5]);
             else

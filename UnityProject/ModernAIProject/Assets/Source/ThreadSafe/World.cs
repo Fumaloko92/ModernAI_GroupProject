@@ -9,7 +9,10 @@ namespace ThreadSafe
     public class World
     {
         private List<Resource> ressources = new List<Resource>();
-        
+        public void setRessources(List<Resource> resss)
+        {           
+            this.ressources = resss;
+        }
 
         public World(List<Vector3> resourcePositions)
         {
@@ -17,6 +20,10 @@ namespace ThreadSafe
             {
                 ressources.Add(new Resource(pos));
             }
+        }
+        World()
+        {
+
         }
 
         public Resource GetRandomResource()
@@ -77,6 +84,24 @@ namespace ThreadSafe
                     resource.SetTaken(true);
                 }
             }
+        }
+
+        /// <summary>
+        /// Copies the world with the resources reset but still in same position
+        /// </summary>
+        /// <returns>copy of the world</returns>
+        public World cleanCopy()
+        {
+            World newWorld = new World();
+
+            List<Resource> newResources = ressources;
+            foreach(Resource r in newResources)
+            {
+                r.SetTaken(false);
+            }
+
+            newWorld.setRessources(newResources);
+            return newWorld;
         }
     }
 }

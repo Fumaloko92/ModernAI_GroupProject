@@ -34,7 +34,7 @@ public class Executor : MonoBehaviour {
         inputValues.Add(1, VillagerInfo.maxHealth);
         inputValues.Add(2, currentWorld.ResourceCount);
         //InitializePopulation();
-        Neat.Initialize(200, 1000, inputValues, new ThreadSafe.World(currentWorld.ResourcePositions));
+        Neat.Initialize(10, 10, inputValues, new ThreadSafe.World(currentWorld.ResourcePositions));
     }
     public void GenerateWorld()
     {
