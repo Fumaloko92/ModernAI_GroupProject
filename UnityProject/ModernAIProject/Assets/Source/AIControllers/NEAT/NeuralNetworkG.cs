@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using System.Collections.Generic;
 
 public class NeuralNetworkG<T, K, A, A1, E> : IGenotype where T : INodeRepresentation, new() where K : IConnectionRepresentation, new()
     where A : IActivationFunction, new() where A1 : IActivationFunction, new() where E : IEvaluator, new()
@@ -14,7 +15,7 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype where T : INodeRepresent
 
     public NeuralNetworkG()
     {
-
+        evaluator = new E();
     }
 
     public T NodesGenotype
@@ -30,7 +31,7 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype where T : INodeRepresent
     public IGenotype GenerateRandomly()
     {
 
-        NeuralNetworkG<T, K, A, A1,E> genotype = new NeuralNetworkG<T, K, A, A1,E>();
+        NeuralNetworkG<T, K, A, A1, E> genotype = new NeuralNetworkG<T, K, A, A1, E>();
         try
         {
             genotype.nodesGenotype = new T();
@@ -49,12 +50,12 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype where T : INodeRepresent
     {
         try
         {
-            nodesGenotype.RandomlyAddNode();
-            nodesGenotype.RandomlyDeleteNode();
+            nodesGenotype.RandomlyAddNode(ConnectionsGenotype);
+            connectionsGenotype.RandomlyDeleteConnection();
             connectionsGenotype.RandomlyAddConnection();
             connectionsGenotype.RandomlyChangeWeights();
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             Debug.Log(e.ToString());
         }
@@ -90,18 +91,28 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype where T : INodeRepresent
 
     public IGenotype Clone()
     {
-        NeuralNetworkG<T, K, A, A1,E> c = new NeuralNetworkG<T, K, A, A1,E>();
+        NeuralNetworkG<T, K, A, A1, E> c = new NeuralNetworkG<T, K, A, A1, E>();
         c.nodesGenotype = (T)nodesGenotype.Clone();
         c.connectionsGenotype = (K)connectionsGenotype.Clone();
         return c;
     }
 
-    public void RunAndEvaluate()
+    public void RunAndEvaluate(Dictionary<int, double> inputValues, ThreadSafe.World world)
     {
-        try {
-            NeuralNetwork<Sigmoid, Sigmoid> phenotype = GetPhenotype();
-            fitness = Evaluator.Evaluate(phenotype.ExecuteNetwork());
-        }catch(Exception e)
+        try
+        {
+            if (!connectionsGenotype.IsEmpty())
+            {
+                NeuralNetwork<Sigmoid, Sigmoid> phenotype = GetPhenotype();
+                foreach (int key in inputValues.Keys)
+                    phenotype.SetData(key, inputValues[key]);
+                Evaluator.InitWorld(world);
+                fitness = Evaluator.Evaluate(phenotype.ExecuteNetwork());
+            }
+            else
+                fitness = float.MinValue;
+        }
+        catch (Exception e)
         {
             Debug.Log(e.ToString());
         }

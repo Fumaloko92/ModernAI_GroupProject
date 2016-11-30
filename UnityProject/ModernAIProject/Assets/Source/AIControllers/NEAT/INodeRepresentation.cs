@@ -8,9 +8,7 @@ public interface INodeRepresentation
 
     int[] GetHiddenNodes();
 
-    void RandomlyAddNode();
-
-    void RandomlyDeleteNode();
+    void RandomlyAddNode(IConnectionRepresentation connectionGenotype);
 
     INodeRepresentation Clone();
 }
@@ -22,9 +20,7 @@ public interface INodeRepresentation<T> : IEquatable<INodeRepresentation<T>>, IN
 
     new int[] GetHiddenNodes();
 
-    new void RandomlyAddNode();
-
-    new void RandomlyDeleteNode();
+    new void RandomlyAddNode(IConnectionRepresentation connectionGenotype);
 
     T NodeRepresentation { get; }
 

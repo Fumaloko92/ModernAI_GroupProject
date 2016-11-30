@@ -3,12 +3,43 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class World : MonoBehaviour {
-    private List<GatheringPlace> gatheringPlaces;
+
+    private List<Vector3> resourcePositions;
+    public List<Vector3> ResourcePositions { get { return resourcePositions; } }
+
+    private List<Resource> ressources = new List<Resource>();
+    private int resourceCount;
+    public int ResourceCount { get { return resourceCount; } }
+
     private GameObject terrain;
+    private Vector2 terrainSize;
+    public Vector2 TerrainSize { get { return terrainSize; } }
 
     void Awake () {
-        gatheringPlaces = new List<GatheringPlace>(GetComponentsInChildren<GatheringPlace>());
+
         terrain = GameObject.FindGameObjectWithTag("Terrain");
+        terrainSize = new Vector2(terrain.GetComponent<Terrain>().terrainData.size.x, terrain.GetComponent<Terrain>().terrainData.size.z);
+
+        resourceCount = StaticRandom.Rand(1, 10);
+        resourcePositions = new List<Vector3>();
+        while (resourceCount > 0)
+        {
+            
+
+            Vector3 pos = new Vector3((float)StaticRandom.Sample() * terrainSize.x, 0, (float)StaticRandom.Sample() * terrainSize.y);
+            pos = new Vector3(pos.x, terrain.GetComponent<Terrain>().SampleHeight(pos), pos.z);
+
+
+            resourcePositions.Add(pos);
+
+            GameObject resObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            resObject.transform.position = pos;
+            resObject.AddComponent<Food>();
+
+            ressources.Add(resObject.GetComponent<Resource>());
+
+            resourceCount--;
+        }
     }
 
     public Resource GetRandomResource(Material destinationMaterial)
@@ -30,19 +61,32 @@ public class World : MonoBehaviour {
         }
     }
 
+    public Resource GetRandomResource()
+    {
+        List<Resource> availableRes = GetAvailableResources(); //get all available resources
+
+        if (availableRes.Count > 0)
+        {
+            Resource resource = availableRes[StaticRandom.Rand(0, availableRes.Count)];
+            
+            return resource;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
     //gets all the resources which are still available
     List<Resource> GetAvailableResources()
     {
         List<Resource> availableRes = new List<Resource>();
 
-        foreach (GatheringPlace place in gatheringPlaces)
+        foreach (Resource ress in ressources)
         {
-            foreach (Resource ress in place.GetComponentsInChildren<Resource>())
+            if (!ress.isTaken())
             {
-                if (!ress.isTaken())
-                {
-                    availableRes.Add(ress);
-                }
+                availableRes.Add(ress);
             }
         }
 
@@ -53,15 +97,12 @@ public class World : MonoBehaviour {
     {
         bool available = false;
 
-        foreach (GatheringPlace place in gatheringPlaces)
+        foreach (Resource ress in ressources)
         {
-            foreach (Resource ress in place.GetComponentsInChildren<Resource>())
+            if (!ress.isTaken())
             {
-                if (!ress.isTaken())
-                {
-                    available = true;
-                    break;
-                }
+                available = true;
+                break;
             }
         }
 
@@ -69,26 +110,23 @@ public class World : MonoBehaviour {
     }
     public void RemoveFromResourcePool(Resource resource)
     {
-        foreach(GatheringPlace place in gatheringPlaces)
+        foreach(Resource ress in ressources)
         {
-            foreach(Resource ress in place.GetComponentsInChildren<Resource>())
+            if(ress.GetInstanceID().Equals(resource.GetInstanceID()))
             {
-                if(ress.GetInstanceID().Equals(resource.GetInstanceID()))
-                {
-                    //remove resource from world - disabled for testing purposes
-                    /*
-                    Debug.Log("removed resource: " + resource.GetInstanceID());
-                    resource.SetTaken(true);
-                    place.RemoveResource(resource);
-                    resource.gameObject.name = "Taken Resource";
-                    resource.GetComponent<MeshRenderer>().material.color = Color.red;
+                //remove resource from world - disabled for testing purposes
+                /*
+                Debug.Log("removed resource: " + resource.GetInstanceID());
+                resource.SetTaken(true);
+                place.RemoveResource(resource);
+                resource.gameObject.name = "Taken Resource";
+                resource.GetComponent<MeshRenderer>().material.color = Color.red;
 
-                    //testing
-                    Destroy(resource.gameObject);*/
-                }
+                //testing
+                Destroy(resource.gameObject);*/
             }
-
         }
+            
     }
 
     

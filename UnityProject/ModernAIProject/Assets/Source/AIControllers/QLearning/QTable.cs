@@ -22,6 +22,7 @@ public class QTable<T>
         qValues = new Dictionary<T, Dictionary<T, float>>();
     }
 
+
     public T GetNextState(T currentState)
     {
         T to;

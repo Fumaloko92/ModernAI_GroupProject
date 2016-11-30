@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Genotype = NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, ThreadSafe.QLearningCore>;
+using Neat = NEAT<NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, ThreadSafe.QLearningCore>>;
 
 public class Executor : MonoBehaviour {
     public GameObject WorldPrefab;
@@ -15,16 +17,25 @@ public class Executor : MonoBehaviour {
     private World currentWorld;
 
     public bool runInBackground = false;
-
+    private Dictionary<int, double> inputValues;
     // Use this for initialization
     void Awake()
     {
         population = new List<AIController>();
         GenerateWorld();
-        InitializePopulation();
-
+        
     }
+    
 
+    void Start()
+    {
+        inputValues = new Dictionary<int, double>();
+        inputValues.Add(0, VillagerInfo.health);
+        inputValues.Add(1, VillagerInfo.maxHealth);
+        inputValues.Add(2, currentWorld.ResourceCount);
+        //InitializePopulation();
+        Neat.Initialize(200, 1000, inputValues, new ThreadSafe.World(currentWorld.ResourcePositions));
+    }
     public void GenerateWorld()
     {
         GameObject g = (GameObject)Instantiate(WorldPrefab, Vector3.zero, Quaternion.identity);
@@ -121,5 +132,19 @@ public class Executor : MonoBehaviour {
 
             return villager;
         }
+    }
+
+    void Update()
+    {
+        List<Genotype> l = Neat.GetGenerationNumber(1);
+        List<Genotype> l1 = Neat.GetGenerationNumber(100);
+        List<Genotype> l2 = Neat.GetGenerationNumber(150);
+        if (l != null && l1 != null && l2 != null)
+            Debug.Log("Funge");
+    }
+
+    void OnApplicationQuit()
+    {
+        Neat.AbortThreads();
     }
 }

@@ -10,7 +10,8 @@ public class ConsumeResource : State {
      * succesful if: resource consumed
      */
     Resource targetResource = null;
-    public ConsumeResource(AIController agent, float rewardMultipler)
+
+    public ConsumeResource(AIController agent, float rewardMultiplier)
     {
         this.agent = agent;
         this.rewardMultiplier = rewardMultiplier;
