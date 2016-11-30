@@ -4,9 +4,6 @@ namespace ThreadSafe
 {
     public abstract class State
     {
-        protected World world;
-        protected AIController agent;
-
         protected float REWARD_VALUE = 2; //reward value
         protected float rewardMultiplier; //multiplier which is trained by NEAT
         protected float cost;
@@ -21,15 +18,15 @@ namespace ThreadSafe
         }
         public states state = states.init;
 
-        public void execute()
+        public void execute(AIController agent)
         {
             switch (state)
             {
                 case states.init:
-                    init();
+                    init(agent);
                     break;
                 case states.running:
-                    running();
+                    running(agent);
                     break;
                 case states.succesful:
                     succesful();
@@ -42,14 +39,14 @@ namespace ThreadSafe
             }
         }
 
-        protected abstract void init();
-        protected abstract void running();
+        protected abstract void init(AIController agent);
+        protected abstract void running(AIController agent);
         protected abstract void succesful();
         protected abstract void failed();
 
         abstract public void reset();
 
-        public abstract float RewardFunction();
+        public abstract float RewardFunction(AIController agent);
         public abstract float CostFunction();
     }
 }

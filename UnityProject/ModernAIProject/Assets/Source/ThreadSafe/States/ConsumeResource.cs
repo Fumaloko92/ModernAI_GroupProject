@@ -13,13 +13,12 @@ namespace ThreadSafe
          */
         Resource targetResource = null;
 
-        public ConsumeResource(AIController agent, float rewardMultiplier)
+        public ConsumeResource(float rewardMultiplier)
         {
-            this.agent = agent;
             this.rewardMultiplier = rewardMultiplier;
         }
 
-        protected override void init()
+        protected override void init(AIController agent)
         {
             targetResource = agent.PopResource(); //take resource from the top of inventory
             cost = 1 / float.MaxValue;
@@ -33,7 +32,7 @@ namespace ThreadSafe
                 state = states.failed; //else fail
             }
         }
-        protected override void running()
+        protected override void running(AIController agent)
         {
             if (targetResource != null)
             {
@@ -63,7 +62,7 @@ namespace ThreadSafe
             state = states.init;
         }
 
-        public override float RewardFunction() //reward function
+        public override float RewardFunction(AIController agent) //reward function
         {
             return (REWARD_VALUE * (agent.GetHealth())) * rewardMultiplier;
         }

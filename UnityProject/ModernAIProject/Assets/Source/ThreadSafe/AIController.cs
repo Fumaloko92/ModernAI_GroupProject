@@ -5,9 +5,12 @@ using System.Text;
 using UnityEngine;
 namespace ThreadSafe
 {
-    abstract public class AIController : IEvaluator
+    public class AIController
     {
+        protected AIGroup myGroup;
         protected World world;
+        public World mWorld { get { return world; } set { this.world = value; } }
+        
         public List<Resource> collectedResources = new List<Resource>();
         public Vector3 pos;
 
@@ -15,9 +18,6 @@ namespace ThreadSafe
         protected State previousState = null;
         protected State currentState = null;
 
-      
-
-        protected QTable<State> qTable;
         protected bool initialized;
         protected int count;
 
@@ -25,17 +25,13 @@ namespace ThreadSafe
         protected float maxHealth = 1;
         protected float health = 1;
 
+        public AIController(AIGroup group)
+        {
+            this.myGroup = group;
+        }
         protected void InitializeAgent()
         {
         }
-
-
-
-        public void InitWorld(World world)
-        {
-            this.world = world.cleanCopy();
-        }
-
         //removes last resource from inventory and returns it
         public Resource PopResource()
         {
@@ -52,9 +48,9 @@ namespace ThreadSafe
 
         protected void Initialize()
         {
-            if (count < 10 && qTable.GetStatesCount() > 0)
+            if (count < 10 && myGroup.QTable.GetStatesCount() > 0)
             {
-                currentState = qTable.GetRandomState(); //start in a random state
+                currentState = myGroup.QTable.GetRandomState(); //start in a random state
                 initialized = true;
 
             }
@@ -95,12 +91,12 @@ namespace ThreadSafe
                             if (currentState.state == State.states.succesful) //if the current state was succesful
                             {
                                 //reward - add reward to connection between previous state and current state
-                                qTable.UpdateQValues(previousState, currentState, currentState.CostFunction(), currentState.RewardFunction());
+                                myGroup.QTable.UpdateQValues(previousState, currentState, currentState.CostFunction(), currentState.RewardFunction(this));
                             }
                             else
                             {
                                 //no reward - maybe punishment?
-                                qTable.UpdateQValues(previousState, currentState, currentState.CostFunction(), 0);
+                                myGroup.QTable.UpdateQValues(previousState, currentState, currentState.CostFunction(), 0);
                             }
                         }
 
@@ -109,7 +105,7 @@ namespace ThreadSafe
 
                         while (previousState == currentState)
                         {
-                            currentState = qTable.GetNextState(previousState);
+                            currentState = myGroup.QTable.GetNextState(previousState);
                         }
 
 
@@ -119,7 +115,7 @@ namespace ThreadSafe
                     else //if state hasn't ended yet
                     {
                         //Debug.Log("[" + gameObject.GetInstanceID() + "] " + "state running");
-                        currentState.execute(); //run it
+                        currentState.execute(this); //run it
                     }
                 }
             }
@@ -148,7 +144,6 @@ namespace ThreadSafe
             return health;
         }
 
-        public abstract float Evaluate(IDictionary<int, double> dict);
     }
 
 }

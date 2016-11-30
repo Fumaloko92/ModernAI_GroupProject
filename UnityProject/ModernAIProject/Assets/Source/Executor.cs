@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using Genotype = NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, ThreadSafe.QLearningCore>;
-using Neat = NEAT<NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, ThreadSafe.QLearningCore>>;
+using Genotype = NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, ThreadSafe.AIGroup>;
+using Neat = NEAT<NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, ThreadSafe.AIGroup>>;
 
 public class Executor : MonoBehaviour {
     public GameObject WorldPrefab;
@@ -34,7 +34,7 @@ public class Executor : MonoBehaviour {
         inputValues.Add(1, VillagerInfo.maxHealth);
         inputValues.Add(2, currentWorld.ResourceCount);
         //InitializePopulation();
-        Neat.Initialize(10, 10, inputValues, new ThreadSafe.World(currentWorld.ResourcePositions));
+        Neat.Initialize(10, 10,100, inputValues, new ThreadSafe.World(currentWorld.ResourcePositions));
     }
     public void GenerateWorld()
     {

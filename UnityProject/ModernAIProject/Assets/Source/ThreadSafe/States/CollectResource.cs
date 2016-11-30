@@ -14,18 +14,16 @@ namespace ThreadSafe
          * succesful if: resource collected
          */
         Resource targetResource = null;
-        public CollectResource(World world, AIController agent, float rewardMultiplier)
+        public CollectResource(float rewardMultiplier)
         {
-            this.world = world;
-            this.agent = agent;
             this.rewardMultiplier = rewardMultiplier;
         }
 
-        protected override void init()
+        protected override void init(AIController agent)
         {
             
 
-            targetResource = world.GetRandomResource(); //gets random ressource
+            targetResource = agent.mWorld.GetRandomResource(); //gets random ressource
 
 
 
@@ -44,7 +42,7 @@ namespace ThreadSafe
 
             agent.AddHealth(-cost);
         }
-        protected override void running()
+        protected override void running(AIController agent)
         {
                 //run teleport
                 if (targetResource != null)
@@ -52,7 +50,7 @@ namespace ThreadSafe
                     agent.pos = targetResource.GetPosition(); //teleport to resource
 
                     agent.collectedResources.Add(targetResource); //collect to inventory
-                    world.RemoveFromResourcePool(targetResource); //remove from world
+                    agent.mWorld.RemoveFromResourcePool(targetResource); //remove from world
 
                     state = states.succesful; //success
                 }
@@ -73,7 +71,7 @@ namespace ThreadSafe
             state = states.init;
         }
 
-        public override float RewardFunction() //reward function
+        public override float RewardFunction(AIController agent) //reward function
         {
             return (REWARD_VALUE * (agent.GetHealth())) * rewardMultiplier;
         }

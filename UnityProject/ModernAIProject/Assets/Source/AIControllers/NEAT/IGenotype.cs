@@ -11,7 +11,7 @@ public interface IGenotype : IComparer
     void Mutate();
     float GetFitness();
     void SetFitness(float value);
-    void RunAndEvaluate(Dictionary<int, double> inputValues, ThreadSafe.World world);
+    void RunAndEvaluate(Dictionary<int, double> inputValues,int internalPopulation, ThreadSafe.World world);
     NeuralNetwork<Sigmoid, Sigmoid> GetPhenotype();
 }
 
