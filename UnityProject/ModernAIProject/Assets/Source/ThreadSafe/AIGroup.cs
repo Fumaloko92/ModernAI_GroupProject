@@ -53,14 +53,14 @@ namespace ThreadSafe
             qTable = new QTable<State>(states);
             //states.Add(gr);
 
-            float avgFitness = 0;
+            float sumFitness = 0;
 
             foreach (AIController ai in members)
             {
-                avgFitness += ai.execute();
+                sumFitness += ai.execute();
             }
 
-            return avgFitness;
+            return sumFitness;
         }
     }
 }
