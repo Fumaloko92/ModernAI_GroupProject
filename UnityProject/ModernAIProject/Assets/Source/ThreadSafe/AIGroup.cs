@@ -12,10 +12,6 @@ namespace ThreadSafe
 
         protected List<AIController> members;
 
-        public AIGroup()
-        {
-
-        }
         public void InitWorld(World world)
         {
             foreach (AIController ai in members)
@@ -61,15 +57,8 @@ namespace ThreadSafe
 
             foreach (AIController ai in members)
             {
-                /*float aiFit = ai.execute();
-                if (avgFitness < aiFit)
-                {
-                    avgFitness = aiFit;
-                }*/
                 avgFitness += ai.execute();
             }
-
-            avgFitness /= members.Count;
 
             return avgFitness;
         }
