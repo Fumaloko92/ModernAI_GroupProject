@@ -25,11 +25,11 @@ namespace ThreadSafe
 
             if (targetResource != null) //if we got something
             {
-                state = states.running; //then continue running
+                agent.state = AIController.states.running; //then continue running
             }
             else
             {
-                state = states.failed; //else fail
+                agent.state = AIController.states.failed; //else fail
             }
         }
         protected override void running(AIController agent)
@@ -40,14 +40,14 @@ namespace ThreadSafe
                 agent.AddHealth(-cost+0.25F);
 
                 //consume
-                state = states.succesful;
+                agent.state = AIController.states.succesful;
             }
             else
             {
                 //health penalty
                 agent.AddHealth(-cost);
 
-                state = states.failed;
+                agent.state = AIController.states.failed;
             }
         }
         protected override void succesful()
@@ -59,7 +59,6 @@ namespace ThreadSafe
         public override void reset()
         {
             targetResource = null;
-            state = states.init;
         }
 
         public override float RewardFunction(AIController agent) //reward function

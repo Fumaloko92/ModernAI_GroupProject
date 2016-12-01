@@ -34,6 +34,9 @@ public class Executor : MonoBehaviour {
         inputValues.Add(1, VillagerInfo.maxHealth);
         inputValues.Add(2, currentWorld.ResourceCount);
         //InitializePopulation();
+        //set which way the ai members should perform their qlearning
+        ThreadSafe.AIGroup.executeMethod = ThreadSafe.AIGroup.ExecuteMethod.oneAIAtATime;
+
         Neat.Initialize(10, 10,100, inputValues, new ThreadSafe.World(currentWorld.ResourcePositions));
     }
     public void GenerateWorld()

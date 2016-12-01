@@ -8,30 +8,20 @@ namespace ThreadSafe
         protected float rewardMultiplier; //multiplier which is trained by NEAT
         protected float cost;
 
-        //states the state can be in!
-        public enum states
-        {
-            init,
-            running,
-            succesful,
-            failed
-        }
-        public states state = states.init;
-
         public void execute(AIController agent)
         {
-            switch (state)
+            switch (agent.state)
             {
-                case states.init:
+                case AIController.states.init:
                     init(agent);
                     break;
-                case states.running:
+                case AIController.states.running:
                     running(agent);
                     break;
-                case states.succesful:
+                case AIController.states.succesful:
                     succesful();
                     break;
-                case states.failed:
+                case AIController.states.failed:
                     failed();
                     break;
                 default:

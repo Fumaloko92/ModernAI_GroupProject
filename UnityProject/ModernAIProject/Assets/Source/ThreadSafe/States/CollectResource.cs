@@ -32,12 +32,12 @@ namespace ThreadSafe
                 cost = Vector3.Distance(agent.pos, targetResource.GetPosition()) / float.MaxValue;
 
 
-                state = states.running; //then start running
+                agent.state = AIController.states.running; //then start running
             }
             else //else fail
             {
                 cost = 10000;
-                state = states.failed;
+                agent.state = AIController.states.failed;
             }
 
             agent.AddHealth(-cost);
@@ -52,11 +52,11 @@ namespace ThreadSafe
                     agent.collectedResources.Add(targetResource); //collect to inventory
                     agent.mWorld.RemoveFromResourcePool(targetResource); //remove from world
 
-                    state = states.succesful; //success
+                    agent.state = AIController.states.succesful; //success
                 }
                 else
                 {
-                    state = states.failed; //fail
+                    agent.state = AIController.states.failed; //fail
                 }
         }
         protected override void succesful()
@@ -68,7 +68,6 @@ namespace ThreadSafe
         public override void reset()
         {
             targetResource = null;
-            state = states.init;
         }
 
         public override float RewardFunction(AIController agent) //reward function

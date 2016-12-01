@@ -7,6 +7,13 @@ namespace ThreadSafe
 {
     public class AIGroup : IEvaluator
     {
+        public enum ExecuteMethod
+        {
+            oneStateAtATime,
+            oneAIAtATime
+        }
+        public static ExecuteMethod executeMethod = ExecuteMethod.oneStateAtATime;
+
         protected QTable<State> qTable;
         public QTable<State> QTable { get { return qTable; } }
 
@@ -53,11 +60,92 @@ namespace ThreadSafe
             qTable = new QTable<State>(states);
             //states.Add(gr);
 
+            switch(executeMethod)
+            {
+                case ExecuteMethod.oneAIAtATime:
+                    return FitnessOfOneAIAtATime();
+                case ExecuteMethod.oneStateAtATime:
+                    return FitnessOfOneStateAtATime();
+                default:
+                    return -1;
+            }
+        }
+
+        float FitnessOfOneAIAtATime()
+        {
             float sumFitness = 0;
 
             foreach (AIController ai in members)
             {
                 sumFitness += ai.execute();
+            }
+
+            return sumFitness;
+        }
+        float FitnessOfOneStateAtATime()
+        {
+            bool someOneAlive = true;
+
+            while(someOneAlive)
+            {
+                someOneAlive = false;
+                foreach (AIController ai in members)
+                {
+                    if (ai.GetHealth() > 0)
+                    {
+                        someOneAlive = true;
+
+                        ai.timeAlive += 1f;
+
+                        if (!ai.isInitialized() || ai.getCurState() == null)
+                        {
+                            ai.Initialize();
+                        }
+                        else
+                        {
+                            if (ai.state == AIController.states.succesful || ai.state == AIController.states.failed) //if current state ended
+                            {
+                                if (ai.getPrevState() != null) //if previous state is not null
+                                {
+                                    if (ai.state == AIController.states.succesful) //if the current state was succesful
+                                    {
+                                        //reward - add reward to connection between previous state and current state
+                                        QTable.UpdateQValues(ai.getPrevState(), ai.getCurState(), ai.getCurState().CostFunction(), ai.getCurState().RewardFunction(ai));
+                                    }
+                                    else
+                                    {
+                                        //no reward - maybe punishment?
+                                        QTable.UpdateQValues(ai.getPrevState(), ai.getCurState(), ai.getCurState().CostFunction(), 0);
+                                    }
+                                }
+
+                                //set previous state as current state and go to next state
+                                ai.setPrevState(ai.getCurState());
+
+                                while (ai.getPrevState() == ai.getCurState())
+                                {
+                                    ai.setCurState(QTable.GetNextState(ai.getPrevState()));
+                                }
+
+                                ai.getPrevState().reset(); //reset state, so we can use it later
+                                ai.state = AIController.states.init;
+                            }
+                            else //if state hasn't ended yet
+                            {
+                                //Debug.Log("[" + gameObject.GetInstanceID() + "] " + "state running");
+                                ai.getCurState().execute(ai); //run it
+                            }
+                        }
+                    }
+                }
+            }
+
+            float sumFitness = 0;
+
+            foreach(AIController ai in members)
+            {
+                sumFitness += ai.timeAlive;
+                ai.timeAlive = 0;
             }
 
             return sumFitness;

@@ -29,7 +29,20 @@ namespace ThreadSafe
         {
             this.myGroup = group;
         }
-        protected void InitializeAgent()
+
+        //controls the current state the AIs state is in
+        public enum states
+        {
+            init,
+            running,
+            succesful,
+            failed
+        }
+        public states state = states.init;
+
+        public float timeAlive = 0;
+
+        public void InitializeAgent()
         {
         }
         //removes last resource from inventory and returns it
@@ -46,7 +59,7 @@ namespace ThreadSafe
             return ress;
         }
 
-        protected void Initialize()
+        public void Initialize()
         {
             if (count < 10 && myGroup.QTable.GetStatesCount() > 0)
             {
@@ -63,7 +76,7 @@ namespace ThreadSafe
         /// <returns>time alive</returns>
         public float execute()
         {
-            float timeAlive = 0;
+            timeAlive = 0;
 
             InitializeAgent();
 
@@ -82,13 +95,13 @@ namespace ThreadSafe
                 }
                 else
                 {
-                    if (currentState.state == State.states.succesful || currentState.state == State.states.failed) //if current state ended
+                    if (state == states.succesful || state == states.failed) //if current state ended
                     {
 
 
                         if (previousState != null) //if previous state is not null
                         {
-                            if (currentState.state == State.states.succesful) //if the current state was succesful
+                            if (state == states.succesful) //if the current state was succesful
                             {
                                 //reward - add reward to connection between previous state and current state
                                 myGroup.QTable.UpdateQValues(previousState, currentState, currentState.CostFunction(), currentState.RewardFunction(this));
@@ -111,6 +124,7 @@ namespace ThreadSafe
 
 
                         previousState.reset(); //reset state, so we can use it later
+                        state = AIController.states.init;
                     }
                     else //if state hasn't ended yet
                     {
@@ -144,6 +158,27 @@ namespace ThreadSafe
             return health;
         }
 
+        public bool isInitialized()
+        {
+            return initialized;
+        }
+
+        public State getCurState()
+        {
+            return currentState;
+        }
+        public State getPrevState()
+        {
+            return previousState;
+        }
+        public void setCurState(State state)
+        {
+            this.currentState = state;
+        }
+        public void setPrevState(State state)
+        {
+            this.previousState = state;
+        }
     }
 
 }
