@@ -2,7 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using Genotype = NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, ThreadSafe.QLearningCore>;
-using Neat = NEAT<NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, ThreadSafe.QLearningCore>>;
+using Neat = NEAT<
+    NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, ThreadSafe.QLearningCore>, 
+    StringNodeRepr,
+    StringConnectionRepr,
+    Sigmoid,
+    Sigmoid
+    >;
 
 public class Executor : MonoBehaviour {
     public GameObject WorldPrefab;

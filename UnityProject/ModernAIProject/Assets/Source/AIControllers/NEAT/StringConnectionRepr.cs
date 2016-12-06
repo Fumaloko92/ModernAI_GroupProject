@@ -19,7 +19,14 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
         }
     }
 
-    public void GenerateRandomValue(INodeRepresentation nodes)
+    public StringConnectionRepr()
+    {
+        connections = "";
+        layers = new Dictionary<int, Dictionary<int, int>>();
+        connectionsDict = new Dictionary<int, Dictionary<int, ConnectionData>>();
+    }
+
+    public void GenerateRandomValue(INodeRepresentation nodes, HistoricalVariation v, Dictionary<int, Variation> v1)
     {
         connectionsDict = new Dictionary<int, Dictionary<int, ConnectionData>>();
         layers = new Dictionary<int, Dictionary<int, int>>();
@@ -43,7 +50,7 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
                 {
                     foreach (int from in layers[layer - 1].Values)
                     {
-                        if (StaticRandom.Sample() < 0.5)
+                        if (StaticRandom.Sample() < NEAT_Static.randomlyGenerateConnectionProbability && !(connectionsDict.ContainsKey(to) && connectionsDict[to].ContainsKey(from)))
                         {
                             if (connectionsDict.ContainsKey(to))
                                 connectionsDict[to].Add(from, new ConnectionData((float)StaticRandom.Sample()));
@@ -53,6 +60,13 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
                                 froms.Add(from, new ConnectionData((float)StaticRandom.Sample()));
                                 connectionsDict[to] = froms;
                             }
+                            if (from == to)
+                                Debug.Log("Problema");
+
+                            Variation c = new Variation(from, to);
+                            v.AddVariation(c);
+                            v1.Add(v.GetVariationIndexOf(c), c);
+
                         }
                     }
                 } while (!connectionsDict.ContainsKey(to) || connectionsDict[to].Count == 0);
@@ -142,7 +156,7 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
         UpdateGenotype();
     }
 
-    public void RandomlyAddConnection()
+    public void RandomlyAddConnection(HistoricalVariation v, Dictionary<int, Variation> v1)
     {
         if (StaticRandom.Sample() < NEAT_Static.addConnectionProbability)
         {
@@ -150,27 +164,49 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
             {
                 foreach (int to in layers[i].Values)
                 {
+                    List<int> possible_froms = new List<int>();
                     for (int k = i - 1; k >= 0; k--)
                     {
                         foreach (int from in layers[k].Values)
                         {
                             if (!connectionsDict.ContainsKey(to) || !connectionsDict[to].ContainsKey(from))
                             {
-
-                                Dictionary<int, ConnectionData> froms;
+                                possible_froms.Add(from);
+                                /*Dictionary<int, ConnectionData> froms;
                                 if (connectionsDict.ContainsKey(to))
                                     froms = connectionsDict[to];
                                 else
                                     froms = new Dictionary<int, ConnectionData>();
                                 froms.Add(from, new ConnectionData((float)StaticRandom.Sample()));
                                 connectionsDict[to] = froms;
-                                return;
+                                return;*/
                             }
                         }
                     }
+                    if (possible_froms.Count == 0)
+                        continue;
+                    if (StaticRandom.Sample() < 0.5f)
+                    {
+                        int f = possible_froms[StaticRandom.Rand(0, possible_froms.Count)];
+                        Dictionary<int, ConnectionData> froms;
+                        if (connectionsDict.ContainsKey(to))
+                            froms = connectionsDict[to];
+                        else
+                            froms = new Dictionary<int, ConnectionData>();
+                        froms.Add(f, new ConnectionData((float)StaticRandom.Sample()));
+                        connectionsDict[to] = froms;
+                        Variation c = new Variation(f, to);
+                        v.AddVariation(c);
+                        int k = v.GetVariationIndexOf(c);
+                        if (v1.ContainsKey(k))
+                            v1[k] = c;
+                        else
+                            v1.Add(k, c);
+                        UpdateGenotype();
+                        return;
+                    }
                 }
             }
-            UpdateGenotype();
         }
     }
 
@@ -267,7 +303,7 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
         return Clone();
     }
 
-    public void RandomlyDeleteConnection()
+    public void RandomlyDeleteConnection(HistoricalVariation v, Dictionary<int, Variation> v1)
     {
         if (StaticRandom.Sample() < NEAT_Static.deleteConnectionProbability)
         {
@@ -284,6 +320,9 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
 
             int from_key = keys[StaticRandom.Rand(0, keys.Count)];
             connectionsDict[to_key][from_key] = new ConnectionData(connectionsDict[to_key][from_key], false);
+            Variation c = new Variation(from_key, to_key);
+            c.Disable();
+            v1[v.GetVariationIndexOf(c)] = c;
             UpdateGenotype();
         }
     }
@@ -337,6 +376,7 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
             else
             {
                 Dictionary<int, int> layer = layers[mid_layer];
+
                 layer.Add(layer.Count, mid);
                 layers[mid_layer] = layer;
             }
@@ -358,7 +398,7 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
         }
         catch (Exception e)
         {
-            string s = "EXCEPTION LOG" + Thread.CurrentThread.ManagedThreadId + System.Environment.NewLine;
+            /*string s = "EXCEPTION LOG" + Thread.CurrentThread.ManagedThreadId + System.Environment.NewLine;
             s += "connections string: " + connections + System.Environment.NewLine;
             s += keys + System.Environment.NewLine;
             s += "From: " + from + System.Environment.NewLine;
@@ -370,14 +410,188 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
                     break;
                 }
 
-            Debug.Log(s);
+            Debug.Log(s);*/
 
+            Debug.Log(e.ToString());
         }
     }
 
     public bool IsEmpty()
     {
         return connections.Length == 0;
+    }
+
+    public bool ContainsConnection(int from, int to)
+    {
+        return connectionsDict.ContainsKey(to) && connectionsDict[to].ContainsKey(from);
+    }
+
+    public void AddConnection(int from, int to, float weight, bool enabled)
+    {
+        if (!connectionsDict.ContainsKey(to) || !connectionsDict[to].ContainsKey(from))
+        {
+            Dictionary<int, ConnectionData> froms;
+            if (connectionsDict.ContainsKey(to))
+                froms = connectionsDict[to];
+            else
+                froms = new Dictionary<int, ConnectionData>();
+            froms.Add(from, new ConnectionData(weight, enabled));
+            connectionsDict[to] = froms;
+            UpdateGenotype();
+        }
+    }
+
+    public float GetConnectionWeight(int from, int to)
+    {
+        if (ContainsConnection(from, to))
+        {
+            return connectionsDict[to][from].weight;
+        }
+
+        return float.MinValue;
+    }
+
+    public void OrganizeNodesByHiddenNodesAndConnections(INodeRepresentation nodes)
+    {
+        layers = new Dictionary<int, Dictionary<int, int>>();
+        Dictionary<int, int> inputLayer = new Dictionary<int, int>();
+        Dictionary<int, int> outputLayer = new Dictionary<int, int>();
+        for (int i = 0; i < NEAT_Static.inputNodes.Length; i++)
+            inputLayer.Add(i, NEAT_Static.inputNodes[i]);
+        for (int i = 0; i < NEAT_Static.outputNodes.Length; i++)
+            outputLayer.Add(i, NEAT_Static.outputNodes[i]);
+        layers.Add(0, inputLayer);
+        layers.Add(1, outputLayer);
+        Queue<int> hiddenQueue = new Queue<int>(nodes.GetHiddenNodes());
+        //PrintConnections();
+        HashSet<int> visited = new HashSet<int>();
+        while (hiddenQueue.Count > 0)
+        {
+            int h = hiddenQueue.Dequeue();
+            Dictionary<int, HashSet<int>> toRemove = new Dictionary<int, HashSet<int>>();
+            if (connectionsDict.ContainsKey(h))
+            {
+                int max = -1;
+                bool breakLoop = false;
+                foreach (int from in connectionsDict[h].Keys)
+                {
+                    int l = FindLayerByNodeID(from);
+                    if (l != -1)
+                    {
+                        if (l > max)
+                            max = l;
+                    }
+                    else
+                    {
+                        if (!visited.Contains(h))
+                        {
+                            visited.Add(h);
+                            hiddenQueue.Enqueue(h);
+
+                        }
+                        else
+                        {
+                            HashSet<int> rem;
+                            if (toRemove.ContainsKey(h))
+                                rem = toRemove[h];
+                            else
+                                rem = new HashSet<int>();
+                            rem.Add(from);
+                            toRemove.Add(h, rem);
+                        }
+                        breakLoop = true;
+                        break;
+                    }
+                }
+                if (toRemove.Count > 0)
+                {
+                    foreach (int to in toRemove.Keys)
+                        foreach (int from in toRemove[to])
+                        {
+                            connectionsDict[to].Remove(from);
+                            if (connectionsDict[to].Count == 0)
+                                connectionsDict.Remove(to);
+                        }
+                    toRemove.Clear();
+                }
+                if (breakLoop)
+                    continue;
+                if (max + 1 == layers.Count - 1)
+                {
+                    // PrintLayers("1b" + System.Environment.NewLine);
+                    layers.Add(layers.Count, layers[layers.Count - 1]);
+                    Dictionary<int, int> newLayer = new Dictionary<int, int>();
+                    newLayer.Add(0, h);
+                    layers[max + 1] = newLayer;
+                    //PrintLayers("1" + System.Environment.NewLine);
+                }
+                else
+                {
+                    Dictionary<int, int> layer = layers[max + 1];
+                    layer.Add(layer.Count, h);
+                    layers[max + 1] = layer;
+                    //PrintLayers("2" + System.Environment.NewLine);
+                }
+            }
+            else
+            {
+                if (layers.Count == 2)
+                {
+                    layers.Add(2, layers[1]);
+                    Dictionary<int, int> newLayer = new Dictionary<int, int>();
+                    newLayer.Add(0, h);
+                    layers[1] = newLayer;
+                    //PrintLayers("3" + System.Environment.NewLine);
+                }
+                else
+                {
+                    Dictionary<int, int> layer = layers[1];
+                    layer.Add(layers[1].Count, h);
+                    layers[1] = layer;
+                    //PrintLayers("4" + System.Environment.NewLine);
+                }
+            }
+        }
+    }
+
+    private int FindLayerByNodeID(int nodeID)
+    {
+        int layer = -1;
+        foreach (int key in layers.Keys)
+            foreach (int id in layers[key].Values)
+                if (nodeID == id)
+                {
+                    layer = key;
+                    break;
+                }
+        return layer;
+    }
+
+    private void PrintLayers(string init)
+    {
+        string s = init;
+        foreach (int k in layers.Keys)
+        {
+            s += k + ":";
+            foreach (int id in layers[k].Values)
+                s += id + " ";
+            s += System.Environment.NewLine;
+        }
+
+        Debug.Log(s);
+    }
+
+    private void PrintConnections()
+    {
+        string s = "";
+        foreach (int to in connectionsDict.Keys)
+        {
+            s += to + ":";
+            foreach (int from in connectionsDict[to].Keys)
+                s += from + " ";
+            s += System.Environment.NewLine;
+        }
+        Debug.Log(s);
     }
 }
 

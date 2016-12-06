@@ -6,9 +6,12 @@ public class NEAT_Static{
     public static int[] inputNodes = { 0, 1, 2 };
     public static int[] outputNodes = { 5, 6 };
 
-    public static float addNodeProbability = 0f;
-    public static float deleteConnectionProbability = 0f;
-    public static float changeWeightProbability = 0f;
-    public static float addConnectionProbability = 0f;
-    public static float randomlyGenerateNodeProbability = 0f;
+    public static float addNodeProbability = 0.2f;
+    public static float deleteConnectionProbability = 0.2f;
+    public static float changeWeightProbability = 0.6f;
+    public static float addConnectionProbability = 0.4f;
+    public static float randomlyGenerateNodeProbability = 0.2f;
+    public static float randomlyGenerateConnectionProbability = 0.6f;
+    public static float crossoverProbability = 0.4f;
+    public static float selectionRangeForCrossover = 0.25f;
 }
