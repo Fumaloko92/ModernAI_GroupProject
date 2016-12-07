@@ -10,16 +10,18 @@ public class NEAT<T> where T : IGenotype, new()
     static private Thread NEAT_THREAD = null;
     static private List<List<T>> generations;
     static private int population;
+    static private int internalPopulation;
     static private int number_generations;
     static private List<T> next_generation;
     static private Thread t1, t2;
     static private List<T> toEvolve;
     static private int retrievableGen;
 
-    static public void Initialize(int n_generations, int population, Dictionary<int, double> inputValues, ThreadSafe.World world)
+    static public void Initialize(int n_generations, int population, int internalPopulation, Dictionary<int, double> inputValues, ThreadSafe.World world)
     {
         number_generations = n_generations;
         NEAT<T>.population = population;
+        NEAT<T>.internalPopulation = internalPopulation;
         retrievableGen = 0;
         instance = new NEAT<T>();
         NEAT_THREAD = new Thread(o => instance.RunNeatLoop(inputValues, world));
@@ -139,7 +141,7 @@ public class NEAT<T> where T : IGenotype, new()
 
     private void NeatInnerEvalulationLoop(T elem, Dictionary<int, double> inputValues, ThreadSafe.World world)
     {
-        elem.RunAndEvaluate(inputValues, world);
+        elem.RunAndEvaluate(inputValues,internalPopulation, world);
     }
 
     private void NeatInnerEvolvingLoop(T elem)

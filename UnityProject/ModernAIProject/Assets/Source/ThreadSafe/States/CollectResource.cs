@@ -14,18 +14,16 @@ namespace ThreadSafe
          * succesful if: resource collected
          */
         Resource targetResource = null;
-        public CollectResource(World world, AIController agent, float rewardMultiplier)
+        public CollectResource(float rewardMultiplier)
         {
-            this.world = world;
-            this.agent = agent;
             this.rewardMultiplier = rewardMultiplier;
         }
 
-        protected override void init()
+        protected override void init(AIController agent)
         {
             
 
-            targetResource = world.GetRandomResource(); //gets random ressource
+            targetResource = agent.mWorld.GetRandomResource(); //gets random ressource
 
 
 
@@ -34,17 +32,17 @@ namespace ThreadSafe
                 cost = Vector3.Distance(agent.pos, targetResource.GetPosition()) / float.MaxValue;
 
 
-                state = states.running; //then start running
+                agent.state = AIController.states.running; //then start running
             }
             else //else fail
             {
                 cost = 10000;
-                state = states.failed;
+                agent.state = AIController.states.failed;
             }
 
             agent.AddHealth(-cost);
         }
-        protected override void running()
+        protected override void running(AIController agent)
         {
                 //run teleport
                 if (targetResource != null)
@@ -52,13 +50,13 @@ namespace ThreadSafe
                     agent.pos = targetResource.GetPosition(); //teleport to resource
 
                     agent.collectedResources.Add(targetResource); //collect to inventory
-                    world.RemoveFromResourcePool(targetResource); //remove from world
+                    agent.mWorld.RemoveFromResourcePool(targetResource); //remove from world
 
-                    state = states.succesful; //success
+                    agent.state = AIController.states.succesful; //success
                 }
                 else
                 {
-                    state = states.failed; //fail
+                    agent.state = AIController.states.failed; //fail
                 }
         }
         protected override void succesful()
@@ -70,10 +68,9 @@ namespace ThreadSafe
         public override void reset()
         {
             targetResource = null;
-            state = states.init;
         }
 
-        public override float RewardFunction() //reward function
+        public override float RewardFunction(AIController agent) //reward function
         {
             return (REWARD_VALUE * (agent.GetHealth())) * rewardMultiplier;
         }
