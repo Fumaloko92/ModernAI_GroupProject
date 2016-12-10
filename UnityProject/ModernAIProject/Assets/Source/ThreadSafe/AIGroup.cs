@@ -41,6 +41,8 @@ namespace ThreadSafe
             List<State> states = new List<State>();
             CollectResource clr;
             ConsumeResource csr;
+            AttackVillager av;
+            StealResource sr;
 
             if (multipliers.ContainsKey(5))
                 clr = new CollectResource((float)multipliers[5]);
@@ -52,11 +54,23 @@ namespace ThreadSafe
             else
                 csr = new ConsumeResource(0);
 
+            if (multipliers.ContainsKey(7))
+                av = new AttackVillager((float)multipliers[7]);
+            else
+                av = new AttackVillager(0);
+
+            if (multipliers.ContainsKey(8))
+                sr = new StealResource((float)multipliers[8]);
+            else
+                sr = new StealResource(0);
+
             //GiveResource gr = new GiveResource();
 
             //states = new List<State>();
             states.Add(clr);
             states.Add(csr);
+            states.Add(av);
+            states.Add(sr);
             qTable = new QTable<State>(states);
             //states.Add(gr);
 
@@ -149,6 +163,33 @@ namespace ThreadSafe
             }
 
             return sumFitness;
+        }
+
+        public AIController getRandomVillager(bool checkForResource = false)
+        {
+            List<AIController> availableAgents = getAvailableVillagers(checkForResource);
+            if(availableAgents.Count > 0)
+            {
+                return availableAgents[StaticRandom.Rand(0, availableAgents.Count)];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private List<AIController> getAvailableVillagers(bool checkForResource = false)
+        {
+            List<AIController> agentList = new List<AIController>();
+            foreach (AIController agent in members)
+            {
+                if(agent.GetHealth() > 0 && (!checkForResource || agent.collectedResources.Count > 0))
+                {
+                    agentList.Add(agent);
+                }
+            }
+
+            return agentList;
         }
     }
 }

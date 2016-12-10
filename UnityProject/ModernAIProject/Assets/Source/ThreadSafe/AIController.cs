@@ -179,6 +179,11 @@ namespace ThreadSafe
         {
             this.previousState = state;
         }
+
+        public AIGroup getMyGroup()
+        {
+            return this.myGroup;
+        }
     }
 
 }
