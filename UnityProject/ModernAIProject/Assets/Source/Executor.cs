@@ -45,7 +45,7 @@ public class Executor : MonoBehaviour {
         //set which way the ai members should perform their qlearning
         ThreadSafe.AIGroup.executeMethod = ThreadSafe.AIGroup.ExecuteMethod.oneAIAtATime;
 
-        Neat.Initialize(10, 100,1000, inputValues, new ThreadSafe.World(currentWorld.ResourcePositions));
+        Neat.Initialize(10000, 100,100, inputValues, new ThreadSafe.World(currentWorld.ResourcePositions));
     }
     public void GenerateWorld()
     {
