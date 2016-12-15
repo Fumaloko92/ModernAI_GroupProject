@@ -45,7 +45,7 @@ public class Executor : MonoBehaviour {
         //set which way the ai members should perform their qlearning
         ThreadSafe.AIGroup.executeMethod = ThreadSafe.AIGroup.ExecuteMethod.oneAIAtATime;
 
-        Neat.Initialize(100, 100,100, inputValues, new ThreadSafe.World(currentWorld.ResourcePositions));
+        Neat.Initialize(10000, 100,1000, inputValues, new ThreadSafe.World(currentWorld.ResourcePositions));
     }
     public void GenerateWorld()
     {
@@ -147,11 +147,8 @@ public class Executor : MonoBehaviour {
 
     void Update()
     {
-        List<Genotype> l = Neat.GetGenerationNumber(1);
-        List<Genotype> l1 = Neat.GetGenerationNumber(100);
-        List<Genotype> l2 = Neat.GetGenerationNumber(150);
-        if (l != null && l1 != null && l2 != null)
-            Debug.Log("Funge");
+        if (Neat.finished)
+            Neat.Serialize();
     }
 
     void OnApplicationQuit()

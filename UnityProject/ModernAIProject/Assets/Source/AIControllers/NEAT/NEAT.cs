@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System;
+using System.IO;
 
 public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() where T1 : INodeRepresentation, new() where K : IConnectionRepresentation, new()
     where A : IActivationFunction, new() where A1 : IActivationFunction, new()
@@ -18,6 +19,8 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
     static private List<T> toEvolve;
     static private int retrievableGen;
     static volatile private HistoricalMarkings historicalMarkings;
+    static public  bool finished;
+    static private bool serialized;
 
     static public void Initialize(int n_generations, int population, int internalPopulation, Dictionary<int, double> inputValues, ThreadSafe.World world)
     {
@@ -30,6 +33,8 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
         instance = new NEAT<T, T1, K, A, A1>();
         NEAT_THREAD = new Thread(o => instance.RunNeatLoop(inputValues, world));
         NEAT_THREAD.Start();
+        finished = false;
+        serialized = false;
     }
 
     private NEAT()
@@ -54,6 +59,24 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
             return generations[n - 1];
         else
             return null;
+    }
+
+    static public void Serialize()
+    {
+        if (!serialized)
+        {
+            string name = "log.csv";
+            string serialization = "";
+            serialization += "GEN_NUMB;BEST_FITNESS;MID_FITNESS;WORST_FITNESS" + Environment.NewLine;
+            int i = 1;
+            foreach (List<T> generation in generations)
+            {
+                serialization += i + ";" + generation[0].GetFitness() + ";" + generation[(generation.Count - 1) / 2].GetFitness() + ";" + generation[generation.Count - 1].GetFitness() + ";" + Environment.NewLine;
+                i++;
+            }
+            File.WriteAllText(name, serialization);
+            serialized = true;
+        }
     }
 
     private void RunNeatLoop(Dictionary<int, double> inputValues, ThreadSafe.World world)
@@ -159,6 +182,27 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
             }
             Debug.Log(i + " generation done!");
         }
+        toEvolve = generations[generations.Count-1];
+        // Debug.Log("Evaluating " + i + " generation");
+        foreach (T elem in toEvolve)
+        {
+            while (t1 != null && t1.IsAlive && t2 != null && t2.IsAlive) ;
+            if (t1 == null || !t1.IsAlive)
+            {
+                t1 = new Thread(o => instance.NeatInnerEvalulationLoop(elem, inputValues, world));
+                t1.IsBackground = true;
+                t1.Start();
+                continue;
+            }
+
+            t2 = new Thread(o => instance.NeatInnerEvalulationLoop(elem, inputValues, world));
+            t2.IsBackground = true;
+            t2.Start();
+        }
+        while (t1.IsAlive || t2.IsAlive) ;
+        toEvolve.Sort((el, el1) => el1.GetFitness().CompareTo(el.GetFitness()));
+        generations[generations.Count - 1] = toEvolve;
+        finished = true;
         Debug.Log("Neat loop ended!");
     }
 
