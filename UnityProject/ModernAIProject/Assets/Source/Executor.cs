@@ -147,8 +147,6 @@ public class Executor : MonoBehaviour {
 
     void Update()
     {
-        if (Neat.finished)
-            Neat.Serialize();
     }
 
     void OnApplicationQuit()

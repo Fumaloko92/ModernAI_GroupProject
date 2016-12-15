@@ -116,6 +116,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
             toEvolve.Sort((el, el1) => el1.GetFitness().CompareTo(el.GetFitness()));
 
             generations[i - 1] = toEvolve;
+            Serialize();
             retrievableGen++;
             int targetSize = toEvolve.Count;
             historicalMarkings.InitializeHistoricalVariationFromPreviousOne(i);
@@ -203,6 +204,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
         toEvolve.Sort((el, el1) => el1.GetFitness().CompareTo(el.GetFitness()));
         generations[generations.Count - 1] = toEvolve;
         finished = true;
+        Serialize();
         Debug.Log("Neat loop ended!");
     }
 
