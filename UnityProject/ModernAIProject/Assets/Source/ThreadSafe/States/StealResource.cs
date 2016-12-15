@@ -1,36 +1,31 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System;
 
 namespace ThreadSafe
 {
-    public class CollectResource : State
+    class StealResource : State
     {
         /*
-         * Precondition: resource available in world
+         * Precondition: another villager available with resource in inventory
          * 
-         * action: goto random resource & collect it
+         * action: goto villager & steal resource
          * 
-         * succesful if: resource collected
+         * succesful if: resource gained
          */
-        Resource targetResource = null;
-        public CollectResource(float rewardMultiplier)
+
+        AIController targetVillager = null;
+        public StealResource(float rewardMultiplier)
         {
             this.rewardMultiplier = rewardMultiplier;
         }
 
         protected override void init(AIController agent)
         {
-            
+            targetVillager = agent.getMyGroup().getRandomVillager(true); //gets random villager with resource
 
-            targetResource = agent.mWorld.GetRandomResource(); //gets random ressource
-
-
-
-            if (targetResource != null) //if there is a resource in the would
+            if (targetVillager != null) //if there is an villager in the would
             {
-                cost = Vector3.Distance(agent.pos, targetResource.GetPosition()) / float.MaxValue;
-
+                cost = Vector3.Distance(agent.pos, targetVillager.pos) / float.MaxValue;
 
                 agent.state = AIController.states.running; //then start running
             }
@@ -45,12 +40,15 @@ namespace ThreadSafe
         protected override void running(AIController agent)
         {
                 //run teleport
-                if (targetResource != null)
+                if (targetVillager != null)
                 {
-                    agent.pos = targetResource.GetPosition(); //teleport to resource
+                    agent.pos = targetVillager.pos; //teleport to villager
 
-                    agent.collectedResources.Add(targetResource); //collect to inventory
-                    agent.mWorld.RemoveFromResourcePool(targetResource); //remove from world
+                    //steal
+                    Resource ress = targetVillager.collectedResources[targetVillager.collectedResources.Count - 1]; //steal resource from villager
+
+                    agent.collectedResources.Add(ress); //add resource to my own inventory
+                    targetVillager.collectedResources.Remove(ress); //remove from his inventory
 
                     agent.state = AIController.states.succesful; //success
                 }
@@ -67,7 +65,7 @@ namespace ThreadSafe
         }
         public override void reset()
         {
-            targetResource = null;
+            targetVillager = null;
         }
 
         public override float RewardFunction(AIController agent) //reward function

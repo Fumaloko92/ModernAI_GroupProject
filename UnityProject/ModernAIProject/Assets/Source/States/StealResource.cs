@@ -11,7 +11,7 @@ public class StealResource : State {
      */
 
     AIController targetVillager = null;
-    public StealResource(Executor executor, AIController agent, float rewardMultipler)
+    public StealResource(Executor executor, AIController agent, float rewardMultiplier)
     {
         this.executor = executor;
         this.agent = agent;
@@ -45,12 +45,21 @@ public class StealResource : State {
             {
                 agent.transform.position = targetVillager.GetPositionInWorld(); //teleport to villager
 
-                Resource ress = targetVillager.collectedResources[targetVillager.collectedResources.Count - 1]; //steal resource from villager
+                if (targetVillager.collectedResources == null || targetVillager.collectedResources.Count > 0)
+                {
+                    state = states.failed;
+                }
+                else
+                {
 
-                agent.collectedResources.Add(ress); //add resource to my own inventory
-                targetVillager.collectedResources.Remove(ress); //remove from his inventory
+                    Resource ress = targetVillager.collectedResources[targetVillager.collectedResources.Count - 1]; //steal resource from villager
 
-                state = states.succesful; //success
+
+                    agent.collectedResources.Add(ress); //add resource to my own inventory
+                    targetVillager.collectedResources.Remove(ress); //remove from his inventory
+
+                    state = states.succesful; //success
+                }
             }
             else
             {

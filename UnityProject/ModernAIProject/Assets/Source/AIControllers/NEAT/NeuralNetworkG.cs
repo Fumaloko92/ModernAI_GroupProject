@@ -105,7 +105,7 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
         return c;
     }
 
-    public void RunAndEvaluate(Dictionary<int, double> inputValues, ThreadSafe.World world)
+    public void RunAndEvaluate(Dictionary<int, double> inputValues, int internalPopulation, ThreadSafe.World world)
     {
         try
         {
@@ -114,7 +114,10 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
                 NeuralNetwork<Sigmoid, Sigmoid> phenotype = GetPhenotype();
                 foreach (int key in inputValues.Keys)
                     phenotype.SetData(key, inputValues[key]);
+
+                Evaluator.InitAIs(internalPopulation);
                 Evaluator.InitWorld(world);
+                
                 fitness = Evaluator.Evaluate(phenotype.ExecuteNetwork());
             }
             else

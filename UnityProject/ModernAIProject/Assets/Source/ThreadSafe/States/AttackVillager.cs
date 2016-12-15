@@ -1,36 +1,30 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System;
 
 namespace ThreadSafe
 {
-    public class CollectResource : State
+    public class AttackVillager : State
     {
         /*
-         * Precondition: resource available in world
+         * Precondition: other villager available in world
          * 
-         * action: goto random resource & collect it
+         * action: goto random villager and attack it
          * 
-         * succesful if: resource collected
+         * succesful if: villager attacked
          */
-        Resource targetResource = null;
-        public CollectResource(float rewardMultiplier)
+        AIController targetVillager = null;
+        public AttackVillager(float rewardMultiplier)
         {
             this.rewardMultiplier = rewardMultiplier;
         }
 
         protected override void init(AIController agent)
         {
-            
+            targetVillager = agent.getMyGroup().getRandomVillager(); //gets random villager
 
-            targetResource = agent.mWorld.GetRandomResource(); //gets random ressource
-
-
-
-            if (targetResource != null) //if there is a resource in the would
+            if (targetVillager != null) //if there is an villager in the would
             {
-                cost = Vector3.Distance(agent.pos, targetResource.GetPosition()) / float.MaxValue;
-
+                cost = Vector3.Distance(agent.pos, targetVillager.pos) / float.MaxValue;
 
                 agent.state = AIController.states.running; //then start running
             }
@@ -45,12 +39,11 @@ namespace ThreadSafe
         protected override void running(AIController agent)
         {
                 //run teleport
-                if (targetResource != null)
+                if (targetVillager != null)
                 {
-                    agent.pos = targetResource.GetPosition(); //teleport to resource
+                    agent.pos = targetVillager.pos; //teleport to villager
 
-                    agent.collectedResources.Add(targetResource); //collect to inventory
-                    agent.mWorld.RemoveFromResourcePool(targetResource); //remove from world
+                    targetVillager.AddHealth(-5); //kills off the agent. maybe it should only damage it?
 
                     agent.state = AIController.states.succesful; //success
                 }
@@ -67,7 +60,7 @@ namespace ThreadSafe
         }
         public override void reset()
         {
-            targetResource = null;
+            targetVillager = null;
         }
 
         public override float RewardFunction(AIController agent) //reward function

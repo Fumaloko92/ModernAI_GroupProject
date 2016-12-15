@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class NEAT_Static{
     public static int[] inputNodes = { 0, 1, 2 };
-    public static int[] outputNodes = { 5, 6 };
+    public static int[] outputNodes = { 5, 6,7,8 };
 
     public static float addNodeProbability = 0.2f;
     public static float deleteConnectionProbability = 0.2f;
@@ -14,4 +14,5 @@ public class NEAT_Static{
     public static float randomlyGenerateConnectionProbability = 0.6f;
     public static float crossoverProbability = 0.4f;
     public static float selectionRangeForCrossover = 0.25f;
+
 }

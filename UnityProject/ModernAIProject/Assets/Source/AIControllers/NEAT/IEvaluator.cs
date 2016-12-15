@@ -17,5 +17,6 @@ public interface IEvaluator
     float Evaluate(IDictionary<int,double> multipliers);
 
     void InitWorld(ThreadSafe.World world);
+    void InitAIs(int AICount);
 }
 

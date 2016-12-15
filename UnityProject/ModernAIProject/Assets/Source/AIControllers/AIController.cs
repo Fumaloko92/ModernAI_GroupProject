@@ -54,7 +54,7 @@ public abstract class AIController : MonoBehaviour {
     //used in the start to select a random start state
     public State GetRandomState()
     {
-        int rndIndex = StaticRandom.Rand(0, GetStatesCount());
+        int rndIndex = StaticRandom.Rand(0, GetStatesCount()-1);
         State state = states[rndIndex];
        // Debug.Log("getting random state: " + state + " in " + rndIndex);
         return state;

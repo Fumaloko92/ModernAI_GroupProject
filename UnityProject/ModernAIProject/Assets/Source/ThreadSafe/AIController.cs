@@ -5,9 +5,12 @@ using System.Text;
 using UnityEngine;
 namespace ThreadSafe
 {
-    abstract public class AIController : IEvaluator
+    public class AIController
     {
+        protected AIGroup myGroup;
         protected World world;
+        public World mWorld { get { return world; } set { this.world = value; } }
+        
         public List<Resource> collectedResources = new List<Resource>();
         public Vector3 pos;
 
@@ -15,9 +18,6 @@ namespace ThreadSafe
         protected State previousState = null;
         protected State currentState = null;
 
-      
-
-        protected QTable<State> qTable;
         protected bool initialized;
         protected int count;
 
@@ -25,17 +25,26 @@ namespace ThreadSafe
         protected float maxHealth = 1;
         protected float health = 1;
 
-        protected void InitializeAgent()
+        public AIController(AIGroup group)
         {
+            this.myGroup = group;
         }
 
-
-
-        public void InitWorld(World world)
+        //controls the current state the AIs state is in
+        public enum states
         {
-            this.world = world;
+            init,
+            running,
+            succesful,
+            failed
         }
+        public states state = states.init;
 
+        public float timeAlive = 0;
+
+        public void InitializeAgent()
+        {
+        }
         //removes last resource from inventory and returns it
         public Resource PopResource()
         {
@@ -50,11 +59,11 @@ namespace ThreadSafe
             return ress;
         }
 
-        protected void Initialize()
+        public void Initialize()
         {
-            if (count < 10 && qTable.GetStatesCount() > 0)
+            if (count < 10 && myGroup.QTable.GetStatesCount() > 0)
             {
-                currentState = qTable.GetRandomState(); //start in a random state
+                currentState = myGroup.QTable.GetRandomState(); //start in a random state
                 initialized = true;
 
             }
@@ -67,7 +76,7 @@ namespace ThreadSafe
         /// <returns>time alive</returns>
         public float execute()
         {
-            float timeAlive = 0;
+            timeAlive = 0;
 
             InitializeAgent();
 
@@ -86,40 +95,43 @@ namespace ThreadSafe
                 }
                 else
                 {
-                    if (currentState.state == State.states.succesful || currentState.state == State.states.failed) //if current state ended
+                    if (state == states.succesful || state == states.failed) //if current state ended
                     {
 
-
-                        if (previousState != null) //if previous state is not null
+                        lock(myGroup.QTable)
                         {
-                            if (currentState.state == State.states.succesful) //if the current state was succesful
+                            if (previousState != null) //if previous state is not null
                             {
-                                //reward - add reward to connection between previous state and current state
-                                qTable.UpdateQValues(previousState, currentState, currentState.CostFunction(), currentState.RewardFunction());
+                                if (state == states.succesful) //if the current state was succesful
+                                {
+                                    //reward - add reward to connection between previous state and current state
+                                    myGroup.QTable.UpdateQValues(previousState, currentState, currentState.CostFunction(), currentState.RewardFunction(this));
+                                }
+                                else
+                                {
+                                    //no reward - maybe punishment?
+                                    myGroup.QTable.UpdateQValues(previousState, currentState, currentState.CostFunction(), 0);
+                                }
                             }
-                            else
+
+                            //set previous state as current state and go to next state
+                            previousState = currentState;
+
+                            while (previousState == currentState)
                             {
-                                //no reward - maybe punishment?
-                                qTable.UpdateQValues(previousState, currentState, currentState.CostFunction(), 0);
+                                currentState = myGroup.QTable.GetNextState(previousState);
                             }
+
+                             
+
+                            previousState.reset(); //reset state, so we can use it later
+                            state = AIController.states.init;
                         }
-
-                        //set previous state as current state and go to next state
-                        previousState = currentState;
-
-                        while (previousState == currentState)
-                        {
-                            currentState = qTable.GetNextState(previousState);
-                        }
-
-
-
-                        previousState.reset(); //reset state, so we can use it later
                     }
                     else //if state hasn't ended yet
                     {
                         //Debug.Log("[" + gameObject.GetInstanceID() + "] " + "state running");
-                        currentState.execute(); //run it
+                        currentState.execute(this); //run it
                     }
                 }
             }
@@ -148,7 +160,32 @@ namespace ThreadSafe
             return health;
         }
 
-        public abstract float Evaluate(IDictionary<int, double> dict);
+        public bool isInitialized()
+        {
+            return initialized;
+        }
+
+        public State getCurState()
+        {
+            return currentState;
+        }
+        public State getPrevState()
+        {
+            return previousState;
+        }
+        public void setCurState(State state)
+        {
+            this.currentState = state;
+        }
+        public void setPrevState(State state)
+        {
+            this.previousState = state;
+        }
+
+        public AIGroup getMyGroup()
+        {
+            return this.myGroup;
+        }
     }
 
 }

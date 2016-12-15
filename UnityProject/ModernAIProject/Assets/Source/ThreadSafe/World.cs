@@ -8,15 +8,22 @@ namespace ThreadSafe
 {
     public class World
     {
-        private List<Resource> ressources = new List<Resource>();
-        
+        private List<Resource> resources = new List<Resource>();
+        public void setResources(List<Resource> resources)
+        {
+            this.resources = resources;
+        }
 
         public World(List<Vector3> resourcePositions)
         {
             foreach(Vector3 pos in resourcePositions)
             {
-                ressources.Add(new Resource(pos));
+                resources.Add(new Resource(pos));
             }
+        }
+        World()
+        {
+
         }
 
         public Resource GetRandomResource()
@@ -40,7 +47,7 @@ namespace ThreadSafe
         {
             List<Resource> availableRes = new List<Resource>();
 
-            foreach (Resource ress in ressources)
+            foreach (Resource ress in resources)
             {
                 if (!ress.isTaken())
                 {
@@ -55,7 +62,7 @@ namespace ThreadSafe
         {
             bool available = false;
 
-            foreach (Resource ress in ressources)
+            foreach (Resource ress in resources)
             {
                 if (!ress.isTaken())
                 {
@@ -68,7 +75,7 @@ namespace ThreadSafe
         }
         public void RemoveFromResourcePool(Resource resource)
         {
-            foreach (Resource ress in ressources)
+            foreach (Resource ress in resources)
             {
                 if (ress.GetHashCode().Equals(resource.GetHashCode()))
                 {
@@ -77,6 +84,24 @@ namespace ThreadSafe
                     resource.SetTaken(true);
                 }
             }
+        }
+
+        /// <summary>
+        /// Copies the world with the resources reset but still in same position
+        /// </summary>
+        /// <returns>copy of the world</returns>
+        public World cleanCopy()
+        {
+            World newWorld = new World();
+
+            List<Resource> newResources = resources;
+            foreach(Resource r in newResources)
+            {
+                r.SetTaken(false);
+            }
+
+            newWorld.setResources(newResources);
+            return newWorld;
         }
     }
 }

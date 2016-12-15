@@ -17,7 +17,9 @@ public interface IGenotype<T, K,A,A1> : IEquatable<IGenotype<T, K,A,A1>>
     void Mutate(HistoricalVariation v);
     float GetFitness();
     void SetFitness(float value);
+
     IGenotype<T, K,A,A1> Clone();
-    void RunAndEvaluate(Dictionary<int, double> inputValues, ThreadSafe.World world);
+    void RunAndEvaluate(Dictionary<int, double> inputValues,int internalPopulation, ThreadSafe.World world);
+
     NeuralNetwork<Sigmoid, Sigmoid> GetPhenotype();
 }
