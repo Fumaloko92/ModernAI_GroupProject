@@ -398,21 +398,23 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
         }
         catch (Exception e)
         {
-            /*string s = "EXCEPTION LOG" + Thread.CurrentThread.ManagedThreadId + System.Environment.NewLine;
+            string s = "EXCEPTION LOG" + Thread.CurrentThread.ManagedThreadId + System.Environment.NewLine;
             s += "connections string: " + connections + System.Environment.NewLine;
             s += keys + System.Environment.NewLine;
-            s += "From: " + from + System.Environment.NewLine;
+            s += "From: " + from + " layer: " + FindLayerByNodeID(from) + System.Environment.NewLine;
+            s += "Mid: " + mid + " layer: " + FindLayerByNodeID(mid) + System.Environment.NewLine;
+            s += "To: " + to + " layer: " + FindLayerByNodeID(to) + Environment.NewLine;
             foreach (int layer in layers.Keys)
+            {
+                s += "Layer " + layer + ": ";
+                foreach (int id in layers[layer].Values)
+                    s += id + " ";
+                s += Environment.NewLine;
+            }
+            s += Environment.NewLine + e.ToString();
+            Debug.Log(s);
 
-                if (layers[layer].ContainsValue(from))
-                {
-                    s += "Layer " + layer;
-                    break;
-                }
-
-            Debug.Log(s);*/
-
-            Debug.Log(e.ToString());
+            //Debug.Log(e.ToString());
         }
     }
 
@@ -450,7 +452,7 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
 
         return float.MinValue;
     }
-
+    /*
     public void OrganizeNodesByHiddenNodesAndConnections(INodeRepresentation nodes)
     {
         layers = new Dictionary<int, Dictionary<int, int>>();
@@ -550,6 +552,99 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
                     layers[1] = layer;
                     //PrintLayers("4" + System.Environment.NewLine);
                 }
+            }
+        }
+    }
+    */
+
+    public void OrganizeNodesByHiddenNodesAndConnections(INodeRepresentation nodes)
+    {
+        layers = new Dictionary<int, Dictionary<int, int>>();
+        Dictionary<int, int> inputLayer = new Dictionary<int, int>();
+        Dictionary<int, int> outputLayer = new Dictionary<int, int>();
+        for (int i = 0; i < NEAT_Static.inputNodes.Length; i++)
+            inputLayer.Add(i, NEAT_Static.inputNodes[i]);
+        for (int i = 0; i < NEAT_Static.outputNodes.Length; i++)
+            outputLayer.Add(i, NEAT_Static.outputNodes[i]);
+        layers.Add(0, inputLayer);
+        layers.Add(1, outputLayer);
+        foreach (int hidden in nodes.GetHiddenNodes())
+            AssignLayerToNodeBasedOnConnections(hidden);
+        /*string s = "";
+        s += "Nodes: ";
+        foreach (int n in nodes.GetHiddenNodes())
+            s += n + " ";
+        s += "Result of organization" + Environment.NewLine;
+        foreach (int layer in layers.Keys)
+        {
+            s += "Layer " + layer + ": ";
+            foreach (int index in layers[layer].Keys)
+                s += layers[layer][index] + " ";
+            s += Environment.NewLine;
+        }*/
+        //Debug.Log(s);
+    }
+
+    private void AssignLayerToNodeBasedOnConnections(int nodeID)
+    {
+        if (!connectionsDict.ContainsKey(nodeID))
+        {
+            int min = int.MaxValue;
+            foreach (int to in connectionsDict.Keys)
+                foreach (int from in connectionsDict[to].Keys)
+                    if (from == min)
+                    {
+                        if (FindLayerByNodeID(to) == -1)
+                            AssignLayerToNodeBasedOnConnections(to);
+                        int l = FindLayerByNodeID(to);
+                        if (min > l)
+                            l = min;
+                    }
+            if (min == int.MaxValue)
+                min = 1;
+            if (min == 1)
+            {
+                for (int i = layers.Count - 1; i > 0; i--)
+                    if (layers.ContainsKey(i + 1))
+                        layers[i + 1] = layers[i];
+                    else
+                        layers.Add(i + 1, layers[i]);
+                Dictionary<int, int> newLayer = new Dictionary<int, int>();
+                newLayer.Add(0, nodeID);
+                layers[1] = newLayer;
+            }
+            else
+            {
+                Dictionary<int, int> layer = layers[min - 1];
+                layer.Add(layer.Count, nodeID);
+                layers[min - 1] = layer;
+            }
+        }
+        else
+        {
+            int max = int.MinValue;
+            foreach (int from in connectionsDict[nodeID].Keys)
+            {
+                if (FindLayerByNodeID(from) == -1)
+                    AssignLayerToNodeBasedOnConnections(from);
+                int l = FindLayerByNodeID(from);
+                if (l > max)
+                    max = l;
+            }
+            if (max == int.MaxValue)
+                max = layers.Count - 2;
+            if (max + 1 == layers.Count - 1)
+            {
+                layers.Add(layers.Count, layers[max + 1]);
+                Dictionary<int, int> newLayer = new Dictionary<int, int>();
+                newLayer.Add(0, nodeID);
+                layers[max + 1] = newLayer;
+            }
+            else
+            {
+                Dictionary<int, int> layer = layers[max + 1];
+                layer.Add(layer.Count, nodeID);
+                layers[max + 1] = layer;
             }
         }
     }

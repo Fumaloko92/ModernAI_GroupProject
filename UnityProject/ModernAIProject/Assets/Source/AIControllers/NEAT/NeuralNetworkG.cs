@@ -268,6 +268,7 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
                 continue;
             }
         }
+        offspring.connectionsGenotype.OrganizeNodesByHiddenNodesAndConnections(NodesGenotype);
         return offspring;
     }
 
@@ -310,7 +311,7 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
                     else
                         connectionsGenotype.AddConnection(v.GetFromNode(), v.GetToNode(), p1.ConnectionsGenotype.GetConnectionWeight(v.GetFromNode(), v.GetToNode()), v.IsEnabled());
                 }
-                connectionsGenotype.OrganizeNodesByHiddenNodesAndConnections(NodesGenotype);
+                
             }
         }
     }

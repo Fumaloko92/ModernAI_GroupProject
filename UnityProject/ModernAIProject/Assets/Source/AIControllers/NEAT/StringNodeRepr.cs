@@ -86,6 +86,8 @@ public class StringNodeRepr : INodeRepresentation<string>
             c2 = new Variation(newId, to);
             v.AddVariation(c1);
             v.AddVariation(c2);
+            Variation c3 = new Variation(from, to);
+            v1.Remove(v.GetVariationIndexOf(c3));
             v1.Add(v.GetVariationIndexOf(c), c);
             v1.Add(v.GetVariationIndexOf(c1), c1);
             v1.Add(v.GetVariationIndexOf(c2), c2);
