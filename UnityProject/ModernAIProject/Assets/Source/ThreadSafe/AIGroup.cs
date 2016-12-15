@@ -17,21 +17,27 @@ namespace ThreadSafe
         protected QTable<State> qTable;
         public QTable<State> QTable { get { return qTable; } }
 
-        protected List<AIController> members;
+        protected volatile List<AIController> members;
 
         public void InitWorld(World world)
         {
-            foreach (AIController ai in members)
+            lock(members)
             {
-                ai.mWorld = world.cleanCopy();;
+                foreach (AIController ai in members) 
+                {
+                    ai.mWorld = world.cleanCopy(); ;
+                }
             }
         }
         public void InitAIs(int AICount)
         {
             members = new List<AIController>();
-            for (int i = 0; i < AICount; i++)
+            lock (members)
             {
-                members.Add(new AIController(this));
+                for (int i = 0; i < AICount; i++)
+                {
+                    members.Add(new AIController(this));
+                }
             }
         }
 
@@ -74,7 +80,7 @@ namespace ThreadSafe
             qTable = new QTable<State>(states);
             //states.Add(gr);
 
-            switch(executeMethod)
+            switch (executeMethod)
             {
                 case ExecuteMethod.oneAIAtATime:
                     return FitnessOfOneAIAtATime();
@@ -87,20 +93,23 @@ namespace ThreadSafe
 
         float FitnessOfOneAIAtATime()
         {
-            float sumFitness = 0;
-
-            foreach (AIController ai in members)
+            lock(members)
             {
-                sumFitness += ai.execute();
-            }
+                float sumFitness = 0;
 
-            return sumFitness;
+                foreach (AIController ai in members)
+                {
+                    sumFitness += ai.execute();
+                }
+
+                return sumFitness;
+            }
         }
         float FitnessOfOneStateAtATime()
         {
             bool someOneAlive = true;
 
-            while(someOneAlive)
+            while (someOneAlive)
             {
                 someOneAlive = false;
                 foreach (AIController ai in members)
@@ -156,7 +165,7 @@ namespace ThreadSafe
 
             float sumFitness = 0;
 
-            foreach(AIController ai in members)
+            foreach (AIController ai in members)
             {
                 sumFitness += ai.timeAlive;
                 ai.timeAlive = 0;
@@ -167,14 +176,17 @@ namespace ThreadSafe
 
         public AIController getRandomVillager(bool checkForResource = false)
         {
-            List<AIController> availableAgents = getAvailableVillagers(checkForResource);
-            if(availableAgents.Count > 0)
+            lock (members)
             {
-                return availableAgents[StaticRandom.Rand(0, availableAgents.Count)];
-            }
-            else
-            {
-                return null;
+                List<AIController> availableAgents = getAvailableVillagers(checkForResource);
+                if (availableAgents.Count > 0)
+                {
+                    return availableAgents[StaticRandom.Rand(0, availableAgents.Count)];
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
@@ -183,7 +195,7 @@ namespace ThreadSafe
             List<AIController> agentList = new List<AIController>();
             foreach (AIController agent in members)
             {
-                if(agent.GetHealth() > 0 && (!checkForResource || agent.collectedResources.Count > 0))
+                if (agent.GetHealth() > 0 && (!checkForResource || agent.collectedResources.Count > 0))
                 {
                     agentList.Add(agent);
                 }

@@ -98,33 +98,35 @@ namespace ThreadSafe
                     if (state == states.succesful || state == states.failed) //if current state ended
                     {
 
-
-                        if (previousState != null) //if previous state is not null
+                        lock(myGroup.QTable)
                         {
-                            if (state == states.succesful) //if the current state was succesful
+                            if (previousState != null) //if previous state is not null
                             {
-                                //reward - add reward to connection between previous state and current state
-                                myGroup.QTable.UpdateQValues(previousState, currentState, currentState.CostFunction(), currentState.RewardFunction(this));
+                                if (state == states.succesful) //if the current state was succesful
+                                {
+                                    //reward - add reward to connection between previous state and current state
+                                    myGroup.QTable.UpdateQValues(previousState, currentState, currentState.CostFunction(), currentState.RewardFunction(this));
+                                }
+                                else
+                                {
+                                    //no reward - maybe punishment?
+                                    myGroup.QTable.UpdateQValues(previousState, currentState, currentState.CostFunction(), 0);
+                                }
                             }
-                            else
+
+                            //set previous state as current state and go to next state
+                            previousState = currentState;
+
+                            while (previousState == currentState)
                             {
-                                //no reward - maybe punishment?
-                                myGroup.QTable.UpdateQValues(previousState, currentState, currentState.CostFunction(), 0);
+                                currentState = myGroup.QTable.GetNextState(previousState);
                             }
+
+                             
+
+                            previousState.reset(); //reset state, so we can use it later
+                            state = AIController.states.init;
                         }
-
-                        //set previous state as current state and go to next state
-                        previousState = currentState;
-
-                        while (previousState == currentState)
-                        {
-                            currentState = myGroup.QTable.GetNextState(previousState);
-                        }
-
-
-
-                        previousState.reset(); //reset state, so we can use it later
-                        state = AIController.states.init;
                     }
                     else //if state hasn't ended yet
                     {

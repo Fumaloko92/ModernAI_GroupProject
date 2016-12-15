@@ -1,8 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+
 using Genotype = NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, ThreadSafe.AIGroup>;
-using Neat = NEAT<NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, ThreadSafe.AIGroup>>;
+using Neat = NEAT<
+    NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, ThreadSafe.AIGroup>, 
+    StringNodeRepr,
+    StringConnectionRepr,
+    Sigmoid,
+    Sigmoid
+    >;
+
 
 public class Executor : MonoBehaviour {
     public GameObject WorldPrefab;
@@ -37,7 +45,7 @@ public class Executor : MonoBehaviour {
         //set which way the ai members should perform their qlearning
         ThreadSafe.AIGroup.executeMethod = ThreadSafe.AIGroup.ExecuteMethod.oneAIAtATime;
 
-        Neat.Initialize(10, 10,100, inputValues, new ThreadSafe.World(currentWorld.ResourcePositions));
+        Neat.Initialize(100, 100,100, inputValues, new ThreadSafe.World(currentWorld.ResourcePositions));
     }
     public void GenerateWorld()
     {
