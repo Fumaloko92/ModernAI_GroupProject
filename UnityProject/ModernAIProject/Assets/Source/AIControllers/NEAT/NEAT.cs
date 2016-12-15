@@ -19,7 +19,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
     static private List<T> toEvolve;
     static private int retrievableGen;
     static volatile private HistoricalMarkings historicalMarkings;
-    static public  bool finished;
+    static public bool finished;
     static private bool serialized;
 
     static public void Initialize(int n_generations, int population, int internalPopulation, Dictionary<int, double> inputValues, ThreadSafe.World world)
@@ -63,20 +63,18 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
 
     static public void Serialize()
     {
-        if (!serialized)
+
+        string name = "log.csv";
+        string serialization = "";
+        serialization += "GEN_NUMB;BEST_FITNESS;MID_FITNESS;WORST_FITNESS" + Environment.NewLine;
+        int i = 1;
+        foreach (List<T> generation in generations)
         {
-            string name = "log.csv";
-            string serialization = "";
-            serialization += "GEN_NUMB;BEST_FITNESS;MID_FITNESS;WORST_FITNESS" + Environment.NewLine;
-            int i = 1;
-            foreach (List<T> generation in generations)
-            {
-                serialization += i + ";" + generation[0].GetFitness() + ";" + generation[(generation.Count - 1) / 2].GetFitness() + ";" + generation[generation.Count - 1].GetFitness() + ";" + Environment.NewLine;
-                i++;
-            }
-            File.WriteAllText(name, serialization);
-            serialized = true;
+            serialization += i + ";" + generation[0].GetFitness() + ";" + generation[(generation.Count - 1) / 2].GetFitness() + ";" + generation[generation.Count - 1].GetFitness() + ";" + Environment.NewLine;
+            i++;
         }
+        File.WriteAllText(name, serialization);
+
     }
 
     private void RunNeatLoop(Dictionary<int, double> inputValues, ThreadSafe.World world)
@@ -183,7 +181,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
             }
             Debug.Log(i + " generation done!");
         }
-        toEvolve = generations[generations.Count-1];
+        toEvolve = generations[generations.Count - 1];
         // Debug.Log("Evaluating " + i + " generation");
         foreach (T elem in toEvolve)
         {

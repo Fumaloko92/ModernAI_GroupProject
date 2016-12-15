@@ -25,7 +25,13 @@ namespace ThreadSafe
             {
                 foreach (AIController ai in members) 
                 {
-                    ai.mWorld = world.cleanCopy(); ;
+                    if(ai != null)
+                    {
+                        lock (world)
+                        {
+                            ai.mWorld = world.cleanCopy();
+                        }
+                    }
                 }
             }
         }
