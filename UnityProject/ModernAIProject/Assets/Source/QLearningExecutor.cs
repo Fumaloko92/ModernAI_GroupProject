@@ -57,8 +57,12 @@ public class QLearningExecutor : MonoBehaviour {
     {
         foreach(ThreadSafe.AIGroup ai in population)
         {
+            float fitness = ai.EvaluateQLearning();
 
-            fitnesses.Add(ai.EvaluateQLearning());
+            Debug.Log("POP NO[" + fitnesses.Count + "] Fitness: " + fitness);
+
+            fitnesses.Add(fitness);
+
             Serialize();
 
             yield return null;
