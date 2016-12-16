@@ -128,6 +128,118 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
             Debug.Log(e.ToString());
         }
     }
+    public void RunAndEvaluateNEAT(Dictionary<int, double> inputValues, int internalPopulation, ThreadSafe.World world)
+    {
+        List<ThreadSafe.State> states = new List<ThreadSafe.State>();
+        ThreadSafe.CollectResource clr = new ThreadSafe.CollectResource(1);
+        ThreadSafe.ConsumeResource csr = new ThreadSafe.ConsumeResource(1);
+        ThreadSafe.AttackVillager av = new ThreadSafe.AttackVillager(1);
+        ThreadSafe.StealResource sr = new ThreadSafe.StealResource(1);
+        states.Add(clr);
+        states.Add(csr);
+        states.Add(av);
+        states.Add(sr);
+
+
+        Evaluator.InitAIs(internalPopulation);
+        Evaluator.InitWorld(world);
+
+        bool alive = true;
+
+        while(alive)
+        {
+            alive = false;
+            
+            int memberSize = Evaluator.GetMembersCount();
+            for(int i = 0; i < memberSize; i++)
+            {
+                if(Evaluator.GetMember(i).GetHealth() > 0)
+                {
+                    alive = true;
+
+                    try
+                    {
+                        NeuralNetwork<Sigmoid, Sigmoid> phenotype = GetPhenotype();
+                        foreach (int key in inputValues.Keys)
+                            phenotype.SetData(key, inputValues[key]);
+
+                        IDictionary<int, double> stateValues = phenotype.ExecuteNetwork();
+
+                        float clrNum = 0;
+                        float csrNum = 0;
+                        float avNum = 0;
+                        float srNum = 0;
+
+                        if (stateValues.ContainsKey(5))
+                            clrNum = (float)stateValues[5];
+
+                        if (stateValues.ContainsKey(6))
+                            csrNum = (float)stateValues[6];
+
+                        if (stateValues.ContainsKey(7))
+                            avNum = (float)stateValues[7];
+
+                        if (stateValues.ContainsKey(8))
+                            srNum = (float)stateValues[8];
+
+
+                        float highestNum = float.MinValue;
+                        ThreadSafe.State stateToRun = clr;
+
+                        if (clrNum > highestNum)
+                        {
+                            stateToRun = clr;
+                            highestNum = clrNum;
+                        }
+
+                        if (csrNum > highestNum)
+                        {
+                            stateToRun = csr;
+                            highestNum = csrNum;
+                        }
+
+                        if (avNum > highestNum)
+                        {
+                            stateToRun = av;
+                            highestNum = avNum;
+                        }
+
+                        if (srNum > highestNum)
+                        {
+                            stateToRun = sr;
+                            highestNum = srNum;
+                        }
+
+
+                        Evaluator.GetMember(i).timeAlive += 1f;
+
+                        if (Evaluator.GetMember(i).getCurState() == null)
+                        {
+                            Evaluator.GetMember(i).setCurState(stateToRun);
+                        }
+                        else
+                        {
+                            while (Evaluator.GetMember(i).state != ThreadSafe.AIController.states.succesful && Evaluator.GetMember(i).state != ThreadSafe.AIController.states.failed && Evaluator.GetMember(i).getCurState() != null)
+                            {
+                                Evaluator.GetMember(i).getCurState().execute(Evaluator.GetMember(i));
+                            }
+
+                            Evaluator.GetMember(i).setCurState(null);
+                            Evaluator.GetMember(i).state = ThreadSafe.AIController.states.init;
+                        }
+                    }
+                    catch(Exception e)
+                    {
+                        Debug.Log(e.ToString());
+                    }
+                }
+            }
+
+
+        }
+
+        fitness = Evaluator.GetFinalFitness();
+    }
 
     public NeuralNetwork<Sigmoid, Sigmoid> GetPhenotype()
     {
