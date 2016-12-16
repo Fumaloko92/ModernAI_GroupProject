@@ -20,6 +20,7 @@ public interface IEvaluator
     void InitAIs(int AICount);
     ThreadSafe.AIController GetMember(int id);
     int GetMembersCount();
+    int GetAliveMembersCount();
 
     float GetFinalFitness();
 }

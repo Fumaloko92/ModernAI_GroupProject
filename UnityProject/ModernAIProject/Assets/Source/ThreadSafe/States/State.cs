@@ -38,5 +38,7 @@ namespace ThreadSafe
 
         public abstract float RewardFunction(AIController agent);
         public abstract float CostFunction();
+
+        public abstract override string ToString();
     }
 }

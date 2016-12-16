@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
+
 namespace ThreadSafe
 {
     public class ConsumeResource : State
@@ -29,6 +31,7 @@ namespace ThreadSafe
             }
             else
             {
+                agent.AddHealth(-1);
                 agent.state = AIController.states.failed; //else fail
             }
         }
@@ -45,7 +48,7 @@ namespace ThreadSafe
             else
             {
                 //health penalty
-                agent.AddHealth(-cost);
+                agent.AddHealth(-1);
 
                 agent.state = AIController.states.failed;
             }
@@ -55,6 +58,7 @@ namespace ThreadSafe
         }
         protected override void failed()
         {
+
         }
         public override void reset()
         {
@@ -68,6 +72,11 @@ namespace ThreadSafe
         public override float CostFunction()
         {
             return cost;
+        }
+
+        public override string ToString()
+        {
+            return "Consume Resource";
         }
     }
 }

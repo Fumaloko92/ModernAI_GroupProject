@@ -86,6 +86,19 @@ namespace ThreadSafe
             }
         }
 
+        public int GetResourceCount()
+        {
+            int count = 0;
+            foreach(Resource ress in resources)
+            {
+                if(!ress.isTaken())
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+        
         /// <summary>
         /// Copies the world with the resources reset but still in same position
         /// </summary>

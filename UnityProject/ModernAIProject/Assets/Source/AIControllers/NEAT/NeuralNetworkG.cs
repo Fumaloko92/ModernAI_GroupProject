@@ -117,7 +117,7 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
 
                 Evaluator.InitAIs(internalPopulation);
                 Evaluator.InitWorld(world);
-                
+
                 fitness = Evaluator.Evaluate(phenotype.ExecuteNetwork());
             }
             else
@@ -145,25 +145,36 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
         Evaluator.InitWorld(world);
 
         bool alive = true;
-
-        while(alive)
+        int counter = 0;
+        while (alive)
         {
+            counter++;
             alive = false;
-            
+
             int memberSize = Evaluator.GetMembersCount();
-            for(int i = 0; i < memberSize; i++)
+            for (int i = 0; i < memberSize; i++)
             {
-                if(Evaluator.GetMember(i).GetHealth() > 0)
+                ThreadSafe.AIController aic = Evaluator.GetMember(i);
+
+                //Debug.Log("Analyzing " + i + " member");
+                if (aic != null && aic.GetHealth() > 0)
                 {
                     alive = true;
 
                     try
                     {
+                        inputValues = new Dictionary<int, double>();
+                        inputValues.Add(0, aic.GetHealth());
+                        inputValues.Add(1, aic.maxHealth);
+                        //inputValues.Add(2, aic.mWorld.GetResourceCount());
+                        inputValues.Add(2, aic.collectedResources.Count);
+                        inputValues.Add(3, Evaluator.GetAliveMembersCount());
+
                         NeuralNetwork<Sigmoid, Sigmoid> phenotype = GetPhenotype();
                         foreach (int key in inputValues.Keys)
                             phenotype.SetData(key, inputValues[key]);
 
-                        IDictionary<int, double> stateValues = phenotype.ExecuteNetwork();
+                        Dictionary<int, double> stateValues = phenotype.ExecuteNetwork();
 
                         float clrNum = 0;
                         float csrNum = 0;
@@ -188,47 +199,47 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
 
                         if (clrNum > highestNum)
                         {
-                            stateToRun = clr;
+                            stateToRun = new ThreadSafe.CollectResource(10000);
                             highestNum = clrNum;
                         }
 
-                        if (csrNum > highestNum)
+                       if (csrNum > highestNum)
                         {
-                            stateToRun = csr;
+                            stateToRun = new ThreadSafe.ConsumeResource(100000);
                             highestNum = csrNum;
                         }
 
                         if (avNum > highestNum)
                         {
-                            stateToRun = av;
+                            stateToRun = new ThreadSafe.AttackVillager(100000);
                             highestNum = avNum;
                         }
 
-                        if (srNum > highestNum)
-                        {
-                            stateToRun = sr;
+                       if (srNum > highestNum)
+                       {
+                            stateToRun = new ThreadSafe.StealResource(100000);
                             highestNum = srNum;
                         }
+                        
 
+                        aic.timeAlive += 1f;
 
-                        Evaluator.GetMember(i).timeAlive += 1f;
-
-                        if (Evaluator.GetMember(i).getCurState() == null)
+                        aic.setCurState(stateToRun);
+                        if (aic.getCurState() == null)
+                            throw new Exception();
+                        while (aic.state != ThreadSafe.AIController.states.succesful && aic.state != ThreadSafe.AIController.states.failed && aic.getCurState() != null)
                         {
-                            Evaluator.GetMember(i).setCurState(stateToRun);
-                        }
-                        else
-                        {
-                            while (Evaluator.GetMember(i).state != ThreadSafe.AIController.states.succesful && Evaluator.GetMember(i).state != ThreadSafe.AIController.states.failed && Evaluator.GetMember(i).getCurState() != null)
+                            
+                            lock(aic)
                             {
-                                Evaluator.GetMember(i).getCurState().execute(Evaluator.GetMember(i));
+                                aic.getCurState().execute(aic);
                             }
-
-                            Evaluator.GetMember(i).setCurState(null);
-                            Evaluator.GetMember(i).state = ThreadSafe.AIController.states.init;
                         }
+                        //Debug.Log(aic.GetHealth() + " " + aic.getCurState().ToString());
+                        aic.state = ThreadSafe.AIController.states.init;
+
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         Debug.Log(e.ToString());
                     }
@@ -426,7 +437,7 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
                     else
                         connectionsGenotype.AddConnection(v.GetFromNode(), v.GetToNode(), p1.ConnectionsGenotype.GetConnectionWeight(v.GetFromNode(), v.GetToNode()), v.IsEnabled());
                 }
-                
+
             }
         }
     }

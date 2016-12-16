@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 namespace ThreadSafe
 {
@@ -35,16 +36,17 @@ namespace ThreadSafe
                 agent.state = AIController.states.failed;
             }
 
-            agent.AddHealth(-cost);
+            agent.AddHealth(-cost-0.1F);
         }
         protected override void running(AIController agent)
         {
                 //run teleport
-                if (targetVillager != null)
+                if (targetVillager != null && targetVillager.collectedResources.Count > 0)
                 {
                     agent.pos = targetVillager.pos; //teleport to villager
 
                     //steal
+                    
                     Resource ress = targetVillager.collectedResources[targetVillager.collectedResources.Count - 1]; //steal resource from villager
 
                     agent.collectedResources.Add(ress); //add resource to my own inventory
@@ -54,7 +56,8 @@ namespace ThreadSafe
                 }
                 else
                 {
-                    agent.state = AIController.states.failed; //fail
+                agent.AddHealth(-10000);
+                agent.state = AIController.states.failed; //fail
                 }
         }
         protected override void succesful()
@@ -75,6 +78,11 @@ namespace ThreadSafe
         public override float CostFunction()
         {
             return cost;
+        }
+
+        public override string ToString()
+        {
+            return "Steal Resource";
         }
     }
 }

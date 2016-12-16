@@ -100,13 +100,13 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
                 while (t1 != null && t1.IsAlive && t2 != null && t2.IsAlive) ;
                 if (t1 == null || !t1.IsAlive)
                 {
-                    t1 = new Thread(o => instance.NeatInnerEvalulationLoop(elem, inputValues, world));
+                    t1 = new Thread(o => instance.NeatInnerEvalulationLoop(elem, inputValues, world.cleanCopy()));
                     t1.IsBackground = true;
                     t1.Start();
                     continue;
                 }
 
-                t2 = new Thread(o => instance.NeatInnerEvalulationLoop(elem, inputValues, world));
+                t2 = new Thread(o => instance.NeatInnerEvalulationLoop(elem, inputValues, world.cleanCopy()));
                 t2.IsBackground = true;
                 t2.Start();
             }

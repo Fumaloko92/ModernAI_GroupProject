@@ -39,8 +39,8 @@ namespace ThreadSafe
                 cost = 10000;
                 agent.state = AIController.states.failed;
             }
-
-            agent.AddHealth(-cost);
+            
+            agent.AddHealth(-cost - 0.1F);
         }
         protected override void running(AIController agent)
         {
@@ -56,7 +56,8 @@ namespace ThreadSafe
                 }
                 else
                 {
-                    agent.state = AIController.states.failed; //fail
+                agent.AddHealth(-10000);
+                agent.state = AIController.states.failed; //fail
                 }
         }
         protected override void succesful()
@@ -64,6 +65,7 @@ namespace ThreadSafe
         }
         protected override void failed()
         {
+            
         }
         public override void reset()
         {
@@ -77,6 +79,11 @@ namespace ThreadSafe
         public override float CostFunction()
         {
             return cost;
+        }
+
+        public override string ToString()
+        {
+            return "Collect Resource";
         }
     }
 }

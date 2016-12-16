@@ -22,7 +22,7 @@ namespace ThreadSafe
         protected int count;
 
         //health
-        protected float maxHealth = 1;
+        public float maxHealth = 1;
         protected float health = 1;
 
         public AIController(AIGroup group)

@@ -55,6 +55,21 @@ namespace ThreadSafe
         {
             return members.Count;
         }
+        public int GetAliveMembersCount()
+        {
+            lock(members)
+            {
+                int count = 0;
+                foreach (AIController memb in members)
+                {
+                    if (memb.GetHealth() > 0)
+                    {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        }
         public float GetFinalFitness()
         {
             float sumFitness = 0;
