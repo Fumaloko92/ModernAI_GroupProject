@@ -62,7 +62,7 @@ namespace ThreadSafe
                 int count = 0;
                 foreach (AIController memb in members)
                 {
-                    if (memb.GetHealth() > 0)
+                    if (memb != null && memb.GetHealth() > 0)
                     {
                         count++;
                     }

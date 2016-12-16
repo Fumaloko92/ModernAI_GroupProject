@@ -147,10 +147,15 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
                 if (StaticRandom.Sample() < NEAT_Static.changeWeightProbability)
                 {
                     ConnectionData d = connectionsDict[to][from];
-                    if (StaticRandom.Sample() < 0.5f)
-                        d.weight += (float)StaticRandom.Sample();
+                    if (StaticRandom.Sample() < NEAT_Static.addSubtractWeightProbability)
+                    {
+                        if (StaticRandom.Sample() < 0.5f)
+                            d.weight += (float)StaticRandom.Sample();
+                        else
+                            d.weight -= (float)StaticRandom.Sample();
+                    }
                     else
-                        d.weight -= (float)StaticRandom.Sample();
+                        d.weight = (float)StaticRandom.Sample();
                     connectionsDict[to][from] = d;
                 }
         UpdateGenotype();

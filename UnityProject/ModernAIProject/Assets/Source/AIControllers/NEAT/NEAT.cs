@@ -10,7 +10,8 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
 {
     static private NEAT<T, T1, K, A, A1> instance;
     static private Thread NEAT_THREAD = null;
-    static private List<List<T>> generations;
+    static private List<T> old_generation;
+    static private List<Fitnesses> fitnesses;
     static private int population;
     static private int internalPopulation;
     static private int number_generations;
@@ -39,7 +40,8 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
 
     private NEAT()
     {
-        generations = new List<List<T>>();
+        fitnesses = new List<Fitnesses>();
+        old_generation = new List<T>();
         next_generation = new List<T>();
         historicalMarkings = new HistoricalMarkings(number_generations);
     }
@@ -53,13 +55,6 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
         GC.Collect();
     }
 
-    static public List<T> GetGenerationNumber(int n)
-    {
-        if (n < retrievableGen)
-            return generations[n - 1];
-        else
-            return null;
-    }
 
     static public void Serialize()
     {
@@ -68,32 +63,40 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
         string serialization = "";
         serialization += "GEN_NUMB;BEST_FITNESS;MID_FITNESS;WORST_FITNESS" + Environment.NewLine;
         int i = 1;
-        foreach (List<T> generation in generations)
+        foreach (Fitnesses fitness in fitnesses)
         {
-            serialization += i + ";" + generation[0].GetFitness() + ";" + generation[(generation.Count - 1) / 2].GetFitness() + ";" + generation[generation.Count - 1].GetFitness() + ";" + Environment.NewLine;
+            serialization += i + ";" + fitness.best + ";" + fitness.midst + ";" + fitness.worst + ";" + Environment.NewLine;
             i++;
         }
         File.WriteAllText(name, serialization);
 
     }
 
+    private class Fitnesses
+    {
+        public float best;
+        public float midst;
+        public float worst;
+
+        public Fitnesses(float b, float m, float w)
+        {
+            best = b; midst = m; worst = w;
+        }
+    }
+
     private void RunNeatLoop(Dictionary<int, double> inputValues, ThreadSafe.World world)
     {
         t1 = null; t2 = null;
-        List<T> current_generation = new List<T>();
+        old_generation = new List<T>();
         IGenotype<T1, K, A, A1> g = new T();
         for (int i = 0; i < population; i++)
-            current_generation.Add((T)g.GenerateRandomly(historicalMarkings.GetHistoricalVariationAt(0)));
-        lock (generations)
-        {
-            generations.Add(current_generation);
-        }
+            old_generation.Add((T)g.GenerateRandomly(historicalMarkings.GetHistoricalVariationAt(0)));
 
         //Debug.Log("Generated starting generation");
         for (int i = 1; i < number_generations; i++)
         {
 
-            toEvolve = generations[i - 1];
+            toEvolve = old_generation;
             // Debug.Log("Evaluating " + i + " generation");
             foreach (T elem in toEvolve)
             {
@@ -113,7 +116,8 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
             while (t1.IsAlive || t2.IsAlive) ;
             toEvolve.Sort((el, el1) => el1.GetFitness().CompareTo(el.GetFitness()));
 
-            generations[i - 1] = toEvolve;
+            old_generation = toEvolve;
+            fitnesses.Add(new Fitnesses(old_generation[0].GetFitness(), old_generation[old_generation.Count/2-1].GetFitness(), old_generation[old_generation.Count-1].GetFitness()));
             Serialize();
             retrievableGen++;
             int targetSize = toEvolve.Count;
@@ -171,9 +175,9 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
                 }
             }
             while (t1.IsAlive || t2.IsAlive) ;
-            lock (generations)
+            lock (old_generation)
             {
-                generations.Add(next_generation);
+                old_generation = next_generation;
                 lock (next_generation)
                 {
                     next_generation = new List<T>();
@@ -181,7 +185,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
             }
             Debug.Log(i + " generation done!");
         }
-        toEvolve = generations[generations.Count - 1];
+        toEvolve = old_generation;
         // Debug.Log("Evaluating " + i + " generation");
         foreach (T elem in toEvolve)
         {
@@ -200,7 +204,8 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
         }
         while (t1.IsAlive || t2.IsAlive) ;
         toEvolve.Sort((el, el1) => el1.GetFitness().CompareTo(el.GetFitness()));
-        generations[generations.Count - 1] = toEvolve;
+        fitnesses.Add(new Fitnesses(old_generation[0].GetFitness(), old_generation[old_generation.Count / 2 - 1].GetFitness(), old_generation[old_generation.Count - 1].GetFitness()));
+        old_generation = toEvolve;
         finished = true;
         Serialize();
         Debug.Log("Neat loop ended!");
@@ -208,7 +213,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
 
     private void NeatInnerEvalulationLoop(T elem, Dictionary<int, double> inputValues, ThreadSafe.World world)
     {
-        elem.RunAndEvaluateNEAT(inputValues, internalPopulation, world);
+        elem.RunAndEvaluate(inputValues, internalPopulation, world);
     }
 
     private void NeatInnerEvolvingLoop(T elem, int index)

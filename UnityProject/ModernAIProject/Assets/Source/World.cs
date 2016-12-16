@@ -20,7 +20,7 @@ public class World : MonoBehaviour {
         terrain = GameObject.FindGameObjectWithTag("Terrain");
         terrainSize = new Vector2(terrain.GetComponent<Terrain>().terrainData.size.x, terrain.GetComponent<Terrain>().terrainData.size.z);
 
-        resourceCount = 1;// StaticRandom.Rand(50, 1000);
+        resourceCount = 1000;// StaticRandom.Rand(50, 1000);
         resourcePositions = new List<Vector3>();
         while (resourceCount > 0)
         {

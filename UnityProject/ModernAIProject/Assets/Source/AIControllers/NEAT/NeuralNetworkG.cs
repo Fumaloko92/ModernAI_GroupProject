@@ -166,9 +166,12 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
                         inputValues = new Dictionary<int, double>();
                         inputValues.Add(0, aic.GetHealth());
                         inputValues.Add(1, aic.maxHealth);
-                        //inputValues.Add(2, aic.mWorld.GetResourceCount());
-                        inputValues.Add(2, aic.collectedResources.Count);
-                        inputValues.Add(3, Evaluator.GetAliveMembersCount());
+                        if (aic.mWorld == null)
+                            inputValues.Add(2, 0);
+                        else
+                            inputValues.Add(2, aic.mWorld.GetResourceCount());
+                        inputValues.Add(3, aic.collectedResources.Count);
+                        inputValues.Add(4, Evaluator.GetAliveMembersCount());
 
                         NeuralNetwork<Sigmoid, Sigmoid> phenotype = GetPhenotype();
                         foreach (int key in inputValues.Keys)
@@ -203,7 +206,7 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
                             highestNum = clrNum;
                         }
 
-                       if (csrNum > highestNum)
+                        if (csrNum > highestNum)
                         {
                             stateToRun = new ThreadSafe.ConsumeResource(100000);
                             highestNum = csrNum;
@@ -215,12 +218,12 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
                             highestNum = avNum;
                         }
 
-                       if (srNum > highestNum)
-                       {
+                        if (srNum > highestNum)
+                        {
                             stateToRun = new ThreadSafe.StealResource(100000);
                             highestNum = srNum;
                         }
-                        
+
 
                         aic.timeAlive += 1f;
 
@@ -229,8 +232,8 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
                             throw new Exception();
                         while (aic.state != ThreadSafe.AIController.states.succesful && aic.state != ThreadSafe.AIController.states.failed && aic.getCurState() != null)
                         {
-                            
-                            lock(aic)
+
+                            lock (aic)
                             {
                                 aic.getCurState().execute(aic);
                             }
