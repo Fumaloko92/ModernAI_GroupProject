@@ -18,5 +18,9 @@ public interface IEvaluator
 
     void InitWorld(ThreadSafe.World world);
     void InitAIs(int AICount);
+    ThreadSafe.AIController GetMember(int id);
+    int GetMembersCount();
+
+    float GetFinalFitness();
 }
 
