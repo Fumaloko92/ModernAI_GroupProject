@@ -17,7 +17,7 @@ namespace ThreadSafe
         protected QTable<State> qTable;
         public QTable<State> QTable { get { return qTable; } }
 
-        protected volatile List<AIController> members;
+        public volatile List<AIController> members;
 
         public void InitWorld(World world)
         {
@@ -45,6 +45,27 @@ namespace ThreadSafe
                     members.Add(new AIController(this));
                 }
             }
+        }
+
+        public AIController GetMember(int id)
+        {
+            return members[id];
+        }
+        public int GetMembersCount()
+        {
+            return members.Count;
+        }
+        public float GetFinalFitness()
+        {
+            float sumFitness = 0;
+
+            foreach (AIController ai in members)
+            {
+                sumFitness += ai.timeAlive;
+                ai.timeAlive = 0;
+            }
+
+            return sumFitness;
         }
 
         public float Evaluate(IDictionary<int, double> multipliers)
