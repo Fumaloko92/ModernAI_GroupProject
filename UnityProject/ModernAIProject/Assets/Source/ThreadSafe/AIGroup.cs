@@ -97,6 +97,48 @@ namespace ThreadSafe
             }
         }
 
+        public float EvaluateQLearning()
+        {
+
+            List<State> states = new List<State>();
+            CollectResource clr;
+            ConsumeResource csr;
+            AttackVillager av;
+            StealResource sr;
+
+            
+                clr = new CollectResource(1);
+
+            
+                csr = new ConsumeResource(1);
+
+            
+                av = new AttackVillager(1);
+
+            
+                sr = new StealResource(1);
+
+            //GiveResource gr = new GiveResource();
+
+            //states = new List<State>();
+            states.Add(clr);
+            states.Add(csr);
+            states.Add(av);
+            states.Add(sr);
+            qTable = new QTable<State>(states);
+            //states.Add(gr);
+
+            switch (executeMethod)
+            {
+                case ExecuteMethod.oneAIAtATime:
+                    return FitnessOfOneAIAtATime();
+                case ExecuteMethod.oneStateAtATime:
+                    return FitnessOfOneStateAtATime();
+                default:
+                    return -1;
+            }
+        }
+
         float FitnessOfOneAIAtATime()
         {
             lock(members)
