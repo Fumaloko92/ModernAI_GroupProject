@@ -279,7 +279,7 @@ namespace ThreadSafe
             List<AIController> agentList = new List<AIController>();
             foreach (AIController agent in members)
             {
-                if (agent.GetHealth() > 0 && (!checkForResource || agent.collectedResources.Count > 0))
+                if (agent != null && agent.GetHealth() > 0 && (!checkForResource || (agent != null && agent.collectedResources != null && agent.collectedResources.Count > 0)))
                 {
                     agentList.Add(agent);
                 }
