@@ -156,11 +156,6 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
             for (int k = 0; k < targetSize; k++)
             {
                 
-                if(k==0)
-                {
-                    next_generation.Add((T)old_generation[0].Clone());
-                    continue;
-                }
                 if (StaticRandom.Sample() < (float)(targetSize - k) / (float)targetSize)
                 {
                     while (t1.IsAlive && t2.IsAlive) ;
