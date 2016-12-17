@@ -74,7 +74,7 @@ namespace ThreadSafe
 
         public override float RewardFunction(AIController agent) //reward function
         {
-            return (REWARD_VALUE * (agent.GetHealth())) * rewardMultiplier;
+            return  rewardMultiplier;
         }
         public override float CostFunction()
         {

@@ -421,88 +421,25 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
         return -1;
     }
 
-    /* public IGenotype<T, K, A, A1> Crossover(IGenotype<T, K, A, A1> p)
-     {
-         NeuralNetworkG<T, K, A, A1, E> offspring = new NeuralNetworkG<T, K, A, A1, E>();
+    public override string ToString()
+    {
+        string s = "";
+        s += nodesGenotype.ToString()+Environment.NewLine;
+        s += connectionsGenotype.ToString()+Environment.NewLine;
 
-         int length = history.GetNumberOfVariations();
-         try
-         {
-             for (int i = 0; i < length; i++)
-             {
-                 Variation v = history.GetVariationAt(i);
-                 if (v.IsNode())
-                 {
-                     if (p.NodesGenotype.ContainsNode(v.GetNodeID()) && nodesGenotype.ContainsNode(v.GetNodeID()))
-                     {
-                         offspring.nodesGenotype.AddNode(v.GetNodeID());
-                     }
-                     else
-                     {
-                         if (StaticRandom.Sample() < 0.5 && (p.NodesGenotype.ContainsNode(v.GetNodeID()) || NodesGenotype.ContainsNode(v.GetNodeID())))
-                         {
-                             offspring.nodesGenotype.AddNode(v.GetNodeID());
-                         }
+        return s;
+    }
 
-                     }
-                     continue;
-                 }
-                 if (v.IsConnection())
-                 {
-                     if (p.ConnectionsGenotype.ContainsConnection(v.GetFromNode(), v.GetToNode()) && connectionsGenotype.ContainsConnection(v.GetFromNode(), v.GetToNode()))
-                     {
-                         float weight;
-                         if (StaticRandom.Sample() < 0.5)
-                             weight = p.ConnectionsGenotype.GetConnectionWeight(v.GetFromNode(), v.GetToNode());
-                         else
-                             weight = connectionsGenotype.GetConnectionWeight(v.GetFromNode(), v.GetToNode());
-                         offspring.connectionsGenotype.AddEnabledConnection(v.GetFromNode(), v.GetToNode(), weight);
-                     }
-                     else
-                     {
-                         if (offspring.nodesGenotype.ContainsNode(v.GetFromNode()) && offspring.nodesGenotype.ContainsNode(v.GetToNode()))
-                         {
-                             if (GetFitness() == p.GetFitness())
-                             {
-                                 float weight;
-                                 weight = p.ConnectionsGenotype.GetConnectionWeight(v.GetFromNode(), v.GetToNode());
-                                 if (weight == float.MinValue)
-                                     weight = ConnectionsGenotype.GetConnectionWeight(v.GetFromNode(), v.GetToNode());
-                                 if (weight != float.MinValue && StaticRandom.Sample() < 0.5)
-                                 {
-                                     offspring.connectionsGenotype.AddEnabledConnection(v.GetFromNode(), v.GetToNode(), weight);
-                                 }
-                                 continue;
-                             }
-
-                             if (GetFitness() < p.GetFitness() && connectionsGenotype.ContainsConnection(v.GetFromNode(), v.GetToNode()))
-                             {
-                                 float weight;
-                                 weight = connectionsGenotype.GetConnectionWeight(v.GetFromNode(), v.GetToNode());
-                                 offspring.connectionsGenotype.AddEnabledConnection(v.GetFromNode(), v.GetToNode(), weight);
-                                 continue;
-                             }
-
-                             if (GetFitness() > p.GetFitness() && p.ConnectionsGenotype.ContainsConnection(v.GetFromNode(), v.GetToNode()))
-                             {
-                                 float weight;
-                                 weight = p.ConnectionsGenotype.GetConnectionWeight(v.GetFromNode(), v.GetToNode());
-                                 offspring.connectionsGenotype.AddEnabledConnection(v.GetFromNode(), v.GetToNode(), weight);
-                             }
-                         }
-                     }
-
-                 }
-             }
-         }
-         catch (Exception e)
-         {
-             Debug.Log(e.ToString());
-         }
-         offspring.connectionsGenotype.OrganizeNodesByHiddenNodesAndConnections(offspring.nodesGenotype);
-         return offspring;
-     }
-     */
+    public NeuralNetwork<A, A1> GetPhenotypeFromString(string s)
+    {
+        string[] tokens = s.Split(Environment.NewLine.ToCharArray());
+        string[] hiddens = tokens[0].Split(',');
+        List<int> h = new List<int>();
+        foreach (string hidden in hiddens)
+            if (hidden.Length > 0)
+                h.Add(int.Parse(hidden));
+        return (NeuralNetwork<A, A1>)new NeuralNetwork<Sigmoid, Sigmoid>(NEAT_Static.inputNodes, h.ToArray(), NEAT_Static.outputNodes, tokens[1]);
+    }
 
     public IGenotype<T, K, A, A1> Crossover(IGenotype<T, K, A, A1> p)
     {

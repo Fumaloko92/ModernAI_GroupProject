@@ -71,17 +71,28 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
     }
 
 
-    static public void Serialize()
+    static public void Serialize(bool saveFitness, T elem = default(T))
     {
 
         string name = "log.csv";
         string serialization = "";
-        serialization += "GEN_NUMB;BEST_FITNESS;MID_FITNESS;WORST_FITNESS" + Environment.NewLine;
-        int i = 1;
-        foreach (Fitnesses fitness in fitnesses)
+        serialization += "GEN_NUMB;";
+        if (!elem.Equals(default(T)))
         {
-            serialization += i + ";" + fitness.best + ";" + fitness.midst + ";" + fitness.worst + ";" + Environment.NewLine;
-            i++;
+            serialization += "ELEMENT";
+        }
+
+        if (saveFitness)
+        {
+            serialization += "BEST_FITNESS; MID_FITNESS; WORST_FITNESS" + Environment.NewLine;
+            int i = 1;
+            foreach (Fitnesses fitness in fitnesses)
+            {
+                if (!elem.Equals(default(T)))
+                    serialization += elem.ToString() + ";";
+                serialization += i + ";" + fitness.best + ";" + fitness.midst + ";" + fitness.worst + ";" + Environment.NewLine;
+                i++;
+            }
         }
         File.WriteAllText(name, serialization);
 
@@ -132,8 +143,8 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
             toEvolve.Sort((el, el1) => el1.GetFitness().CompareTo(el.GetFitness()));
 
             old_generation = toEvolve;
-            fitnesses.Add(new Fitnesses(old_generation[0].GetFitness(), old_generation[old_generation.Count/2-1].GetFitness(), old_generation[old_generation.Count-1].GetFitness()));
-            Serialize();
+            fitnesses.Add(new Fitnesses(old_generation[0].GetFitness(), old_generation[old_generation.Count / 2 - 1].GetFitness(), old_generation[old_generation.Count - 1].GetFitness()));
+            Serialize(true,old_generation[0]);
             retrievableGen++;
             int targetSize = toEvolve.Count;
             historicalMarkings.InitializeHistoricalVariationFromPreviousOne(i);
@@ -148,7 +159,9 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
                     if (StaticRandom.Sample() < NEAT_Static.crossoverProbability)
                     {
                         int selectedLength = (int)(toEvolve.Count * NEAT_Static.selectionRangeForCrossover);
-                        T clone1 = (T)toEvolve[StaticRandom.Rand(0, selectedLength)].Clone();
+                        int parentIndex = StaticRandom.Rand(0, selectedLength);
+                        //Debug.Log("I am making the crossover between " + k +" and " + parentIndex);
+                        T clone1 = (T)toEvolve[parentIndex].Clone();
                         if (!t1.IsAlive)
                         {
                             t1 = new Thread(o => instance.NeatInnerCrossoverLoop(clone, clone1, i));
@@ -162,6 +175,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
                     }
                     else
                     {
+                        //  Debug.Log("I am mutating " + k);
                         if (!t1.IsAlive)
                         {
                             t1 = new Thread(o => instance.NeatInnerEvolvingLoop(clone, i));
@@ -176,6 +190,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
                 }
                 else
                 {
+                    // Debug.Log("I am regenerating the individual number " + k);
                     while (t1.IsAlive && t2.IsAlive) ;
                     if (!t1.IsAlive)
                     {
@@ -222,7 +237,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
         fitnesses.Add(new Fitnesses(old_generation[0].GetFitness(), old_generation[old_generation.Count / 2 - 1].GetFitness(), old_generation[old_generation.Count - 1].GetFitness()));
         old_generation = toEvolve;
         finished = true;
-        Serialize();
+        Serialize(true,old_generation[0]);
         Debug.Log("Neat loop ended!");
     }
 
@@ -355,7 +370,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
 
     private void NeatInnerEvalulationLoop(T elem, Dictionary<int, double> inputValues, ThreadSafe.World world)
     {
-        elem.RunAndEvaluateNEAT(inputValues, internalPopulation, world);
+        elem.RunAndEvaluate(inputValues, internalPopulation, world);
     }
     private void NeatInnerEvalulationLoop(T elem, Dictionary<int, double> inputValues, World world)
     {

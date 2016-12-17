@@ -22,6 +22,7 @@ public interface IConnectionRepresentation
     bool ContainsConnection(int from, int to);
     bool IsEmpty();
     void OrganizeNodesByHiddenNodesAndConnections(INodeRepresentation nodes);
+    string ToString();
 }
 
 public interface IConnectionRepresentation<T> : IEquatable<IConnectionRepresentation<T>>, IConnectionRepresentation
@@ -50,4 +51,5 @@ public interface IConnectionRepresentation<T> : IEquatable<IConnectionRepresenta
     new bool IsEmpty();
 
     new void OrganizeNodesByHiddenNodesAndConnections(INodeRepresentation nodes);
+    new string ToString();
 }

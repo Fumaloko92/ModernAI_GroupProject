@@ -16,6 +16,7 @@ public interface INodeRepresentation
     void AddNode(int index);
     INodeRepresentation Clone();
 
+    string ToString();
 }
 
 
@@ -32,4 +33,6 @@ public interface INodeRepresentation<T> : IEquatable<INodeRepresentation<T>>, IN
     T NodeRepresentation { get; }
 
     new INodeRepresentation<T> Clone();
+
+    new string ToString();
 }
