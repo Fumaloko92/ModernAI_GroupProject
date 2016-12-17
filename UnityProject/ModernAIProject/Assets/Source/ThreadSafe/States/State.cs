@@ -7,7 +7,7 @@ namespace ThreadSafe
         protected float REWARD_VALUE = 2; //reward value
         protected float rewardMultiplier; //multiplier which is trained by NEAT
         protected float cost;
-        protected float healthCost = 0.01f;
+        protected float healthCost = -0.1f;
         public void execute(AIController agent)
         {
             switch (agent.state)

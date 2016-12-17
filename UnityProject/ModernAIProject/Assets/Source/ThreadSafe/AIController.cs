@@ -10,7 +10,7 @@ namespace ThreadSafe
         protected AIGroup myGroup;
         protected World world;
         public World mWorld { get { return world; } set { this.world = value; } }
-        
+
         public List<Resource> collectedResources = new List<Resource>();
         public Vector3 pos;
 
@@ -80,14 +80,14 @@ namespace ThreadSafe
 
             InitializeAgent();
 
-            
+
 
             count = 0;
             Initialize();
 
             while (GetHealth() > 0)
             {
-                timeAlive+=1f;
+                timeAlive += 1f;
 
                 if (!initialized || currentState == null)
                 {
@@ -98,7 +98,7 @@ namespace ThreadSafe
                     if (state == states.succesful || state == states.failed) //if current state ended
                     {
 
-                        lock(myGroup.QTable)
+                        lock (myGroup.QTable)
                         {
                             if (previousState != null) //if previous state is not null
                             {
@@ -122,7 +122,7 @@ namespace ThreadSafe
                                 currentState = myGroup.QTable.GetNextState(previousState);
                             }
 
-                             
+
 
                             previousState.reset(); //reset state, so we can use it later
                             state = AIController.states.init;
@@ -143,6 +143,7 @@ namespace ThreadSafe
         //health
         public void AddHealth(float value)
         {
+           
             health += value;
             if (health > maxHealth)
             {

@@ -88,6 +88,8 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
 
     public bool Equals(IGenotype<T, K, A, A1> other)
     {
+        if (other == null)
+            return false;
         if (nodesGenotype.Equals(other.NodesGenotype) && connectionsGenotype.Equals(other.ConnectionsGenotype))
             return true;
         else
@@ -424,15 +426,15 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
     public override string ToString()
     {
         string s = "";
-        s += nodesGenotype.ToString()+Environment.NewLine;
-        s += connectionsGenotype.ToString()+Environment.NewLine;
+        s += nodesGenotype.ToString()+"?";
+        s += connectionsGenotype.ToString();
 
         return s;
     }
 
     public NeuralNetwork<A, A1> GetPhenotypeFromString(string s)
     {
-        string[] tokens = s.Split(Environment.NewLine.ToCharArray());
+        string[] tokens = s.Split('?');
         string[] hiddens = tokens[0].Split(',');
         List<int> h = new List<int>();
         foreach (string hidden in hiddens)
