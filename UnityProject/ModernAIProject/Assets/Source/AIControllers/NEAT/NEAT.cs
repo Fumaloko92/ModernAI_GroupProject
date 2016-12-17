@@ -213,7 +213,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
 
     private void NeatInnerEvalulationLoop(T elem, Dictionary<int, double> inputValues, ThreadSafe.World world)
     {
-        elem.RunAndEvaluateNEAT(inputValues, internalPopulation, world);
+        elem.RunAndEvaluate(inputValues, internalPopulation, world);
     }
 
     private void NeatInnerEvolvingLoop(T elem, int index)
