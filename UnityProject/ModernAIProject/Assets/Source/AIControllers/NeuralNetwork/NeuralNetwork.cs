@@ -212,6 +212,11 @@ public class NeuralNetwork<T, K> where T : IActivationFunction, new() where K : 
         }
         return ris;
     }
+
+    public static explicit operator NeuralNetwork<T, K>(NeuralNetwork<Sigmoid, Sigmoid> v)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public interface IActivationFunction

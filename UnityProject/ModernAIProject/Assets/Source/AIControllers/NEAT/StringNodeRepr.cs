@@ -11,6 +11,16 @@ public class StringNodeRepr : INodeRepresentation<string>
 
     private int[] hiddenNodes;
 
+    public override string ToString()
+    {
+        string s = "";
+        foreach (int id in hiddenNodes)
+            s += id + ",";
+        return s;
+    }
+
+
+
     public StringNodeRepr()
     {
         nodes = "";

@@ -10,89 +10,78 @@ public class CollectResource : State {
      * succesful if: resource collected
      */
     Resource targetResource = null;
-    public CollectResource(Executor executor, World world, AIController agent, float rewardMultiplier)
+    public CollectResource(float rewardMultiplier)
     {
-        this.executor = executor;
-        this.world = world;
-        this.agent = agent;
         this.rewardMultiplier = rewardMultiplier;
     }
 
-    protected override void init()
+    protected override void init(AIController agent)
     {
-        //health penalty
-        agent.AddHealth(-0.25F);
+        targetResource = agent.mWorld.GetRandomResource(); //gets random ressource
 
-        targetResource = world.GetRandomResource(executor.MaterialForDestination); //gets random ressource
 
-        if(targetResource != null) //if there is a resource in the would
+        if (targetResource != null) //if there is a resource in the would
         {
-            state = states.running; //then start running
+            cost = Vector3.Distance(agent.pos, targetResource.transform.position) / float.MaxValue;
+            //Debug.Log("cost:" + cost);
+
+            agent.state = AIController.states.running; //then start running
         }
         else //else fail
         {
-            state = states.failed;
+            cost = 10000;
+            //Debug.Log("fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+            agent.state = AIController.states.failed;
         }
 
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "executing CollectResource");
+        agent.AddHealth(healthCost);
     }
-    protected override void running()
+    protected override void running(AIController agent)
     {
-        if(executor.testModeON)
+        //run navagent
+        if(targetResource != null)
         {
-            //run teleport
-            if (targetResource != null)
+            agent.myAgent.SetDestination(targetResource.GetPositionInWorld());
+            if (agent.myAgent.remainingDistance < agent.transform.localScale.x * 1.5F) //agent.transform.localScale.x*1.5F makes sure fat villagers still can collect resources
             {
-                agent.transform.position = targetResource.GetPositionInWorld(); //teleport to resource
-
                 agent.collectedResources.Add(targetResource); //collect to inventory
-                world.RemoveFromResourcePool(targetResource); //remove from world
+                agent.mWorld.RemoveFromResourcePool(targetResource); //remove from world
 
-                state = states.succesful; //success
+                //Debug.Log(agent.gameObject.name + ": Collect");
+                agent.state = AIController.states.succesful; //success
             }
-            else
-            {
-                state = states.failed; //fail
-            }
-
         }
         else
         {
-            //run navagent
-            if(targetResource != null)
-            {
-                agent.myAgent.SetDestination(targetResource.GetPositionInWorld());
-                if (agent.myAgent.remainingDistance < agent.transform.localScale.x * 1.5F) //agent.transform.localScale.x*1.5F makes sure fat villagers still can collect resources
-                {
-                    agent.collectedResources.Add(targetResource); //collect to inventory
-                    world.RemoveFromResourcePool(targetResource); //remove from world
-                    
-                    state = states.succesful; //success
-                }
-            }
-            else
-            {
-                state = states.failed; //Fail
-            }
+            //agent.AddHealth(-10000);
+            //Debug.Log("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww");
+            agent.state = AIController.states.failed; //fail
         }
     }
     protected override void succesful()
     {
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "succesful CollectResource");
+        
     }
     protected override void failed()
     {
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "failed CollectResource");
+
     }
     public override void reset()
     {
         targetResource = null;
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "state reset");
-        state = states.init;
     }
 
-    public override float RewardFunction() //reward function
+    public override float RewardFunction(AIController agent) //reward function
     {
         return (REWARD_VALUE * (agent.GetHealth())) * rewardMultiplier;
+    }
+    public override float CostFunction()
+    {
+        return cost;
+    }
+
+    public override string ToString()
+    {
+        return "Collect Resource";
     }
 }

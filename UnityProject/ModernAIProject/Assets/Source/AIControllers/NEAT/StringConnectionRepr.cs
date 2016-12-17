@@ -19,6 +19,11 @@ public class StringConnectionRepr : IConnectionRepresentation<string>
         }
     }
 
+    public override string ToString()
+    {
+        return connections;
+    }
+
     public StringConnectionRepr()
     {
         connections = "";

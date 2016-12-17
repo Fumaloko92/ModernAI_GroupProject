@@ -2,9 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 
-using Genotype = NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, ThreadSafe.AIGroup>;
+using Genotype = NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, AIGroup>;
 using Neat = NEAT<
-    NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, ThreadSafe.AIGroup>, 
+    NeuralNetworkG<StringNodeRepr, StringConnectionRepr, Sigmoid, Sigmoid, AIGroup>,
     StringNodeRepr,
     StringConnectionRepr,
     Sigmoid,
@@ -12,7 +12,8 @@ using Neat = NEAT<
     >;
 
 
-public class Executor : MonoBehaviour {
+public class ExecutorRealTime : MonoBehaviour
+{
     public GameObject WorldPrefab;
     public GameObject VillagerPrefab;
     public Material MaterialForDestination;
@@ -31,9 +32,9 @@ public class Executor : MonoBehaviour {
     {
         population = new List<AIController>();
         GenerateWorld();
-        
+
     }
-    
+
 
     void Start()
     {
@@ -43,9 +44,9 @@ public class Executor : MonoBehaviour {
         inputValues.Add(2, currentWorld.ResourceCount);
         //InitializePopulation();
         //set which way the ai members should perform their qlearning
-        ThreadSafe.AIGroup.executeMethod = ThreadSafe.AIGroup.ExecuteMethod.oneAIAtATime;
-
-        Neat.Initialize(500, 300, 100, inputValues, new ThreadSafe.World(currentWorld.ResourcePositions));
+        AIGroup.executeMethod = AIGroup.ExecuteMethod.oneAIAtATime;
+        //AIGroup.executor = this;
+        Neat.Initialize(10000, 300, 100, inputValues, currentWorld);
     }
     public void GenerateWorld()
     {
@@ -63,12 +64,12 @@ public class Executor : MonoBehaviour {
             int sizeX = Mathf.RoundToInt(Terrain.activeTerrain.terrainData.size.x);
             int sizeZ = Mathf.RoundToInt(Terrain.activeTerrain.terrainData.size.z);
 
-            Vector3 pos = new Vector3(StaticRandom.Rand(-sizeX/2,sizeX/2),0,StaticRandom.Rand(-sizeZ/2,sizeZ/2));
-            g.transform.position = new Vector3(pos.x,Terrain.activeTerrain.SampleHeight(pos),pos.z);
+            Vector3 pos = new Vector3(StaticRandom.Rand(-sizeX / 2, sizeX / 2), 0, StaticRandom.Rand(-sizeZ / 2, sizeZ / 2));
+            g.transform.position = new Vector3(pos.x, Terrain.activeTerrain.SampleHeight(pos), pos.z);
             //
 
             //name the villager with it's instance ID, so we can identify it in the console view
-            g.name = "Villager [" + g.GetInstanceID()+"]";
+            g.name = "Villager [" + g.GetInstanceID() + "]";
 
             AIController aiControl = g.GetComponent<AIController>();
 
@@ -108,7 +109,7 @@ public class Executor : MonoBehaviour {
     }
 
     //get random villager that is not the villager in the param
-    public AIController GetRandomVillager(AIController curAgent) 
+    public AIController GetRandomVillager(AIController curAgent)
     {
         if (population.Count <= 1) //if noone but the param villager in the world is available
         {
@@ -149,11 +150,11 @@ public class Executor : MonoBehaviour {
             AIController villager = null;
 
             //go through each villager and choose the one that is not the curAgent and has atleast one resource
-            foreach(AIController agent in population)
+            foreach (AIController agent in population)
             {
-                if(!agent.Equals(curAgent))
+                if (!agent.Equals(curAgent))
                 {
-                    if(agent.collectedResources.Count > 0)
+                    if (agent.collectedResources.Count > 0)
                     {
                         villager = agent;
                         break;

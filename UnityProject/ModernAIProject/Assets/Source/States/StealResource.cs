@@ -11,101 +11,74 @@ public class StealResource : State {
      */
 
     AIController targetVillager = null;
-    public StealResource(Executor executor, AIController agent, float rewardMultiplier)
+    public StealResource(float rewardMultiplier)
     {
-        this.executor = executor;
-        this.agent = agent;
         this.rewardMultiplier = rewardMultiplier;
     }
 
-    protected override void init()
+    protected override void init(AIController agent)
     {
-        //health penalty
-        agent.AddHealth(-0.25F);
+        targetVillager = agent.getMyGroup().getRandomVillager(true); //gets random villager with resource
 
-        targetVillager = executor.GetVillagerWithResource(agent); //get a villager with some resource in inventory
-
-        if (targetVillager != null) //if there is a such thing
+        if (targetVillager != null) //if there is an villager in the would
         {
-            state = states.running; //then continue
+            cost = Vector3.Distance(agent.pos, targetVillager.pos) / float.MaxValue;
+
+            agent.state = AIController.states.running; //then start running
         }
-        else
+        else //else fail
         {
-            state = states.failed; //else fail
+            //cost = 10000;
+            agent.state = AIController.states.failed;
         }
 
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "executing StealResource");
+        agent.AddHealth(healthCost);
     }
-    protected override void running()
+    protected override void running(AIController agent)
     {
-        if(executor.testModeON)
+        //run navagent
+        if (targetVillager != null && targetVillager.collectedResources.Count > 0) //make sure the villager is still alive and got a resource
         {
-            //run teleport
-            if (targetVillager != null && targetVillager.collectedResources.Count > 0) //make sure the villager is still alive and got my resource
+            agent.myAgent.SetDestination(targetVillager.transform.position);
+            if (agent.myAgent.remainingDistance < agent.transform.localScale.x * 2F) // agent.transform.localScale.x * 1.5F makes sure fat villagers is also able to steal
             {
-                agent.transform.position = targetVillager.GetPositionInWorld(); //teleport to villager
+                Resource ress = targetVillager.collectedResources[targetVillager.collectedResources.Count - 1]; //steal resource from villager
 
-                if (targetVillager.collectedResources == null || targetVillager.collectedResources.Count > 0)
-                {
-                    state = states.failed;
-                }
-                else
-                {
-
-                    Resource ress = targetVillager.collectedResources[targetVillager.collectedResources.Count - 1]; //steal resource from villager
-
-
-                    agent.collectedResources.Add(ress); //add resource to my own inventory
-                    targetVillager.collectedResources.Remove(ress); //remove from his inventory
-
-                    state = states.succesful; //success
-                }
+                agent.collectedResources.Add(ress); //add resource to my own inventory
+                targetVillager.collectedResources.Remove(ress); //remove from his inventory
+                //Debug.Log(agent.gameObject.name + ": Steal");
+                agent.state = AIController.states.succesful; //success
             }
-            else
-            {
-                state = states.failed; // failed
-            }
-
         }
         else
         {
-            //run navagent
-            if (targetVillager != null && targetVillager.collectedResources.Count > 0) //make sure the villager is still alive and got a resource
-            {
-                agent.myAgent.SetDestination(targetVillager.GetPositionInWorld());
-                if (agent.myAgent.remainingDistance < agent.transform.localScale.x * 1.5F) // agent.transform.localScale.x * 1.5F makes sure fat villagers is also able to steal
-                {
-                    Resource ress = targetVillager.collectedResources[targetVillager.collectedResources.Count - 1]; //get resource from target
-
-                    agent.collectedResources.Add(ress); //add to my inventory
-                    targetVillager.collectedResources.Remove(ress); //Remove from his inventory
-                    
-                    state = states.succesful; //success
-                }
-            }
-            else
-            {
-                state = states.failed; //faild
-            }
+            //agent.AddHealth(-10000);
+            agent.state = AIController.states.failed; //fail
         }
     }
     protected override void succesful()
     {
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "succesful StealResource");
+        
     }
     protected override void failed()
     {
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "failed StealResource");
     }
     public override void reset()
     {
         targetVillager = null;
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "state reset");
-        state = states.init;
     }
 
-    public override float RewardFunction() //reward function
+    public override float RewardFunction(AIController agent) //reward function
     {
         return (REWARD_VALUE * (agent.GetHealth())) * rewardMultiplier;
+    }
+    public override float CostFunction()
+    {
+        return cost;
+    }
+
+    public override string ToString()
+    {
+        return "Steal Resource";
     }
 }

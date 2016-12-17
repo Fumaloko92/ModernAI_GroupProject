@@ -287,5 +287,18 @@ namespace ThreadSafe
 
             return agentList;
         }
+
+
+
+        public void InitWorld(global::World world)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public global::AIController GetMemberR(int id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

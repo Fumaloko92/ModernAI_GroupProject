@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 
-public class QLearningCore : AIController
-{
+public class QLearningCore// : AIController
+{/*
     void Awake()
     {
         initialized = false;
@@ -106,5 +106,5 @@ public class QLearningCore : AIController
         //states.Add(gr);
         states.Add(sr);
         return execute();
-    }
+    }*/
 }

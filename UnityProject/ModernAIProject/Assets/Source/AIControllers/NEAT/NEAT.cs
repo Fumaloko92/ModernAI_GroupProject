@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -38,6 +38,21 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
         serialized = false;
     }
 
+    static public void Initialize(int n_generations, int population, int internalPopulation, Dictionary<int, double> inputValues, World world)
+    {
+        number_generations = n_generations;
+
+        NEAT<T, T1, K, A, A1>.population = population;
+        NEAT<T, T1, K, A, A1>.internalPopulation = internalPopulation;
+
+        retrievableGen = 0;
+        instance = new NEAT<T, T1, K, A, A1>();
+        NEAT_THREAD = new Thread(o => instance.RunNeatLoop(inputValues, world));
+        NEAT_THREAD.Start();
+        finished = false;
+        serialized = false;
+    }
+
     private NEAT()
     {
         fitnesses = new List<Fitnesses>();
@@ -56,17 +71,28 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
     }
 
 
-    static public void Serialize()
+    static public void Serialize(bool saveFitness, T elem = default(T))
     {
 
         string name = "log.csv";
         string serialization = "";
-        serialization += "GEN_NUMB;BEST_FITNESS;MID_FITNESS;WORST_FITNESS" + Environment.NewLine;
-        int i = 1;
-        foreach (Fitnesses fitness in fitnesses)
+        serialization += "GEN_NUMB;";
+        if (!elem.Equals(default(T)))
         {
-            serialization += i + ";" + fitness.best + ";" + fitness.midst + ";" + fitness.worst + ";" + Environment.NewLine;
-            i++;
+            serialization += "ELEMENT";
+        }
+
+        if (saveFitness)
+        {
+            serialization += "BEST_FITNESS; MID_FITNESS; WORST_FITNESS" + Environment.NewLine;
+            int i = 1;
+            foreach (Fitnesses fitness in fitnesses)
+            {
+                if (!elem.Equals(default(T)))
+                    serialization += elem.ToString() + ";";
+                serialization += i + ";" + fitness.best + ";" + fitness.midst + ";" + fitness.worst + ";" + Environment.NewLine;
+                i++;
+            }
         }
         File.WriteAllText(name, serialization);
 
@@ -117,8 +143,8 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
             toEvolve.Sort((el, el1) => el1.GetFitness().CompareTo(el.GetFitness()));
 
             old_generation = toEvolve;
-            fitnesses.Add(new Fitnesses(old_generation[0].GetFitness(), old_generation[old_generation.Count/2-1].GetFitness(), old_generation[old_generation.Count-1].GetFitness()));
-            Serialize();
+            fitnesses.Add(new Fitnesses(old_generation[0].GetFitness(), old_generation[old_generation.Count / 2 - 1].GetFitness(), old_generation[old_generation.Count - 1].GetFitness()));
+            Serialize(true,old_generation[0]);
             retrievableGen++;
             int targetSize = toEvolve.Count;
             historicalMarkings.InitializeHistoricalVariationFromPreviousOne(i);
@@ -134,7 +160,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
                     {
                         int selectedLength = (int)(toEvolve.Count * NEAT_Static.selectionRangeForCrossover);
                         int parentIndex = StaticRandom.Rand(0, selectedLength);
-                            //Debug.Log("I am making the crossover between " + k +" and " + parentIndex);
+                        //Debug.Log("I am making the crossover between " + k +" and " + parentIndex);
                         T clone1 = (T)toEvolve[parentIndex].Clone();
                         if (!t1.IsAlive)
                         {
@@ -149,7 +175,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
                     }
                     else
                     {
-                      //  Debug.Log("I am mutating " + k);
+                        //  Debug.Log("I am mutating " + k);
                         if (!t1.IsAlive)
                         {
                             t1 = new Thread(o => instance.NeatInnerEvolvingLoop(clone, i));
@@ -164,7 +190,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
                 }
                 else
                 {
-                   // Debug.Log("I am regenerating the individual number " + k);
+                    // Debug.Log("I am regenerating the individual number " + k);
                     while (t1.IsAlive && t2.IsAlive) ;
                     if (!t1.IsAlive)
                     {
@@ -211,11 +237,142 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
         fitnesses.Add(new Fitnesses(old_generation[0].GetFitness(), old_generation[old_generation.Count / 2 - 1].GetFitness(), old_generation[old_generation.Count - 1].GetFitness()));
         old_generation = toEvolve;
         finished = true;
-        Serialize();
+        Serialize(true,old_generation[0]);
+        Debug.Log("Neat loop ended!");
+    }
+
+    private void RunNeatLoop(Dictionary<int, double> inputValues, World world)
+    {
+        t1 = null; t2 = null;
+        old_generation = new List<T>();
+        IGenotype<T1, K, A, A1> g = new T();
+        for (int i = 0; i < population; i++)
+            old_generation.Add((T)g.GenerateRandomly(historicalMarkings.GetHistoricalVariationAt(0)));
+
+        //Debug.Log("Generated starting generation");
+        for (int i = 1; i < number_generations; i++)
+        {
+
+            toEvolve = old_generation;
+            // Debug.Log("Evaluating " + i + " generation");
+            foreach (T elem in toEvolve)
+            {
+                while (t1 != null && t1.IsAlive && t2 != null && t2.IsAlive) ;
+                if (t1 == null || !t1.IsAlive)
+                {
+                    t1 = new Thread(o => instance.NeatInnerEvalulationLoop(elem, inputValues, world));
+                    t1.IsBackground = true;
+                    t1.Start();
+                    continue;
+                }
+
+                t2 = new Thread(o => instance.NeatInnerEvalulationLoop(elem, inputValues, world));
+                t2.IsBackground = true;
+                t2.Start();
+            }
+            while (t1.IsAlive || t2.IsAlive) ;
+            toEvolve.Sort((el, el1) => el1.GetFitness().CompareTo(el.GetFitness()));
+
+            old_generation = toEvolve;
+            fitnesses.Add(new Fitnesses(old_generation[0].GetFitness(), old_generation[old_generation.Count / 2 - 1].GetFitness(), old_generation[old_generation.Count - 1].GetFitness()));
+            Serialize(true,old_generation[0]);
+            retrievableGen++;
+            int targetSize = toEvolve.Count;
+            historicalMarkings.InitializeHistoricalVariationFromPreviousOne(i);
+            Debug.Log("Evolving " + i + " generation");
+            for (int k = 0; k < targetSize; k++)
+            {
+
+                if (StaticRandom.Sample() < (float)(targetSize - k) / (float)targetSize)
+                {
+                    while (t1.IsAlive && t2.IsAlive) ;
+                    T clone = (T)toEvolve[k].Clone();
+                    if (StaticRandom.Sample() < NEAT_Static.crossoverProbability)
+                    {
+                        int selectedLength = (int)(toEvolve.Count * NEAT_Static.selectionRangeForCrossover);
+                        T clone1 = (T)toEvolve[StaticRandom.Rand(0, selectedLength)].Clone();
+                        if (!t1.IsAlive)
+                        {
+                            t1 = new Thread(o => instance.NeatInnerCrossoverLoop(clone, clone1, i));
+                            t1.IsBackground = true;
+                            t1.Start();
+                            continue;
+                        }
+                        t2 = new Thread(o => instance.NeatInnerCrossoverLoop(clone, clone1, i));
+                        t2.IsBackground = true;
+                        t2.Start();
+                    }
+                    else
+                    {
+                        if (!t1.IsAlive)
+                        {
+                            t1 = new Thread(o => instance.NeatInnerEvolvingLoop(clone, i));
+                            t1.IsBackground = true;
+                            t1.Start();
+                            continue;
+                        }
+                        t2 = new Thread(o => instance.NeatInnerEvolvingLoop(clone, i));
+                        t2.IsBackground = true;
+                        t2.Start();
+                    }
+                }
+                else
+                {
+                    while (t1.IsAlive && t2.IsAlive) ;
+                    if (!t1.IsAlive)
+                    {
+                        t1 = new Thread(o => instance.NeatInnerRandomGenLoop(i));
+                        t1.IsBackground = true;
+                        t1.Start();
+                        continue;
+                    }
+                    t2 = new Thread(o => instance.NeatInnerRandomGenLoop(i));
+                    t2.IsBackground = true;
+                    t2.Start();
+                }
+            }
+            while (t1.IsAlive || t2.IsAlive) ;
+            lock (old_generation)
+            {
+                old_generation = next_generation;
+                lock (next_generation)
+                {
+                    next_generation = new List<T>();
+                }
+            }
+            Debug.Log(i + " generation done!");
+        }
+        toEvolve = old_generation;
+        // Debug.Log("Evaluating " + i + " generation");
+        foreach (T elem in toEvolve)
+        {
+            while (t1 != null && t1.IsAlive && t2 != null && t2.IsAlive) ;
+            if (t1 == null || !t1.IsAlive)
+            {
+                t1 = new Thread(o => instance.NeatInnerEvalulationLoop(elem, inputValues, world));
+                t1.IsBackground = true;
+                t1.Start();
+                continue;
+            }
+
+            t2 = new Thread(o => instance.NeatInnerEvalulationLoop(elem, inputValues, world));
+            t2.IsBackground = true;
+            t2.Start();
+        }
+        while (t1.IsAlive || t2.IsAlive) ;
+        toEvolve.Sort((el, el1) => el1.GetFitness().CompareTo(el.GetFitness()));
+        fitnesses.Add(new Fitnesses(old_generation[0].GetFitness(), old_generation[old_generation.Count / 2 - 1].GetFitness(), old_generation[old_generation.Count - 1].GetFitness()));
+        old_generation = toEvolve;
+        finished = true;
+        Serialize(true, old_generation[0]);
         Debug.Log("Neat loop ended!");
     }
 
     private void NeatInnerEvalulationLoop(T elem, Dictionary<int, double> inputValues, ThreadSafe.World world)
+    {
+        elem.RunAndEvaluate(inputValues, internalPopulation, world);
+    }
+    private void NeatInnerEvalulationLoop(T elem, Dictionary<int, double> inputValues, World world)
     {
         elem.RunAndEvaluateNEAT(inputValues, internalPopulation, world);
     }
