@@ -22,4 +22,6 @@ public interface IGenotype<T, K,A,A1> : IEquatable<IGenotype<T, K,A,A1>>
     void RunAndEvaluate(Dictionary<int, double> inputValues,int internalPopulation, ThreadSafe.World world);
     void RunAndEvaluateNEAT(Dictionary<int, double> inputValues, int internalPopulation, ThreadSafe.World world);
     NeuralNetwork<Sigmoid, Sigmoid> GetPhenotype();
+    string ToString();
+    NeuralNetwork<A,A1> GetPhenotypeFromString(string s);
 }

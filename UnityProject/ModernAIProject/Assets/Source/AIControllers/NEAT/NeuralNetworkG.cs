@@ -270,7 +270,25 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
         return -1;
     }
 
-  
+    public override string ToString()
+    {
+        string s = "";
+        s += nodesGenotype.ToString()+Environment.NewLine;
+        s += connectionsGenotype.ToString()+Environment.NewLine;
+
+        return s;
+    }
+
+    public NeuralNetwork<A, A1> GetPhenotypeFromString(string s)
+    {
+        string[] tokens = s.Split(Environment.NewLine.ToCharArray());
+        string[] hiddens = tokens[0].Split(',');
+        List<int> h = new List<int>();
+        foreach (string hidden in hiddens)
+            if (hidden.Length > 0)
+                h.Add(int.Parse(hidden));
+        return (NeuralNetwork<A, A1>)new NeuralNetwork<Sigmoid, Sigmoid>(NEAT_Static.inputNodes, h.ToArray(), NEAT_Static.outputNodes, tokens[1]);
+    }
 
     public IGenotype<T, K, A, A1> Crossover(IGenotype<T, K, A, A1> p)
     {

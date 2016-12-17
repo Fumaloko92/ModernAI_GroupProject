@@ -177,11 +177,17 @@ public class Variation : IEquatable<Variation>, ICloneable
         return v;
     }
 
+    public override string ToString()
+    {
+        return type.ToString();
+    }
     abstract class VariationType : IEquatable<VariationType>
     {
         abstract public bool Equals(VariationType other);
 
         public abstract override int GetHashCode();
+
+        public abstract override string ToString();
     }
 
     class NodeVariationType : VariationType
@@ -207,6 +213,11 @@ public class Variation : IEquatable<Variation>, ICloneable
         public override int GetHashCode()
         {
             return nodeID.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return "NV_" + nodeID;
         }
     }
 
@@ -237,6 +248,11 @@ public class Variation : IEquatable<Variation>, ICloneable
         public override int GetHashCode()
         {
             return from.GetHashCode() ^ to.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return "CV_" + from+"-"+to;
         }
     }
 }
