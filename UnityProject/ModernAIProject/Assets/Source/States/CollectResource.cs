@@ -23,7 +23,7 @@ public class CollectResource : State {
         if (targetResource != null) //if there is a resource in the would
         {
             cost = Vector3.Distance(agent.pos, targetResource.transform.position) / float.MaxValue;
-            Debug.Log("cost:" + cost);
+            //Debug.Log("cost:" + cost);
 
             agent.state = AIController.states.running; //then start running
         }
@@ -47,7 +47,7 @@ public class CollectResource : State {
                 agent.collectedResources.Add(targetResource); //collect to inventory
                 agent.mWorld.RemoveFromResourcePool(targetResource); //remove from world
 
-                Debug.Log(agent.gameObject.name + ": Collect");
+                //Debug.Log(agent.gameObject.name + ": Collect");
                 agent.state = AIController.states.succesful; //success
             }
         }

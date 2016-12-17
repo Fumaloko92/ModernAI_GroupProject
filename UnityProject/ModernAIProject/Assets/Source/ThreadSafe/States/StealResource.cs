@@ -36,29 +36,28 @@ namespace ThreadSafe
                 agent.state = AIController.states.failed;
             }
 
-            agent.AddHealth(-cost-0.1F);
+            agent.AddHealth(healthCost);
         }
         protected override void running(AIController agent)
         {
-                //run teleport
-                if (targetVillager != null && targetVillager.collectedResources.Count > 0)
-                {
-                    agent.pos = targetVillager.pos; //teleport to villager
+            //run teleport
+            if (targetVillager != null && targetVillager.collectedResources.Count > 0)
+            {
+                agent.pos = targetVillager.pos; //teleport to villager
 
-                    //steal
-                    
-                    Resource ress = targetVillager.collectedResources[targetVillager.collectedResources.Count - 1]; //steal resource from villager
+                //steal
 
-                    agent.collectedResources.Add(ress); //add resource to my own inventory
-                    targetVillager.collectedResources.Remove(ress); //remove from his inventory
+                Resource ress = targetVillager.collectedResources[targetVillager.collectedResources.Count - 1]; //steal resource from villager
 
-                    agent.state = AIController.states.succesful; //success
-                }
-                else
-                {
-                agent.AddHealth(-10000);
+                agent.collectedResources.Add(ress); //add resource to my own inventory
+                targetVillager.collectedResources.Remove(ress); //remove from his inventory
+
+                agent.state = AIController.states.succesful; //success
+            }
+            else
+            {
                 agent.state = AIController.states.failed; //fail
-                }
+            }
         }
         protected override void succesful()
         {

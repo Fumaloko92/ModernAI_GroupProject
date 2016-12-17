@@ -31,7 +31,7 @@ namespace ThreadSafe
             }
             else
             {
-                agent.AddHealth(-1);
+                agent.AddHealth(healthCost);
                 agent.state = AIController.states.failed; //else fail
             }
         }
@@ -40,7 +40,7 @@ namespace ThreadSafe
             if (targetResource != null)
             {
                 //health reward
-                agent.AddHealth(-cost+0.25F);
+                agent.AddHealth(-cost + 0.25F);
 
                 //consume
                 agent.state = AIController.states.succesful;

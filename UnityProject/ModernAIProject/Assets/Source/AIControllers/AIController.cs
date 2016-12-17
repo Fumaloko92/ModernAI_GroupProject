@@ -186,7 +186,7 @@ public class AIController : MonoBehaviour {
         //health
         public void AddHealth(float value)
         {
-            Debug.Log("HP:" + value);
+            //Debug.Log("HP:" + value);
             health += value;
             if (health > maxHealth)
             {

@@ -37,7 +37,7 @@ public class ConsumeResource : State {
         {
             //health reward
             agent.AddHealth(-cost + 0.25F);
-            Debug.Log(agent.gameObject.name + ": Consume");
+           // Debug.Log(agent.gameObject.name + ": Consume");
             //consume
             agent.state = AIController.states.succesful;
         }

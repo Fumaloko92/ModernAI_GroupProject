@@ -43,7 +43,7 @@ public class AttackVillager : State {
             if (agent.myAgent.remainingDistance < agent.transform.localScale.x * 2F) //agent.transform.localScale.x*1.5F makes sure fat villagers still can kill someone
             {
                 targetVillager.AddHealth(-5); //kills off the agent. maybe it should only damage it?
-                Debug.Log(agent.gameObject.name+": Attack");
+                //Debug.Log(agent.gameObject.name+": Attack");
                 agent.state = AIController.states.succesful; //success
             }
         }

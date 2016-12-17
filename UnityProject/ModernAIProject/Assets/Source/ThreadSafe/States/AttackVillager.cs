@@ -34,24 +34,23 @@ namespace ThreadSafe
                 agent.state = AIController.states.failed;
             }
 
-            agent.AddHealth(-cost - 0.1F);
+            agent.AddHealth(healthCost);
         }
         protected override void running(AIController agent)
         {
-                //run teleport
-                if (targetVillager != null)
-                {
-                    agent.pos = targetVillager.pos; //teleport to villager
+            //run teleport
+            if (targetVillager != null)
+            {
+                agent.pos = targetVillager.pos; //teleport to villager
 
-                    targetVillager.AddHealth(-5); //kills off the agent. maybe it should only damage it?
+                targetVillager.AddHealth(-5); //kills off the agent. maybe it should only damage it?
 
-                    agent.state = AIController.states.succesful; //success
-                }
-                else
-                {
-                agent.AddHealth(-10000);
+                agent.state = AIController.states.succesful; //success
+            }
+            else
+            {
                 agent.state = AIController.states.failed; //fail
-                }
+            }
         }
         protected override void succesful()
         {
@@ -66,7 +65,7 @@ namespace ThreadSafe
 
         public override float RewardFunction(AIController agent) //reward function
         {
-            return  rewardMultiplier;
+            return rewardMultiplier;
         }
         public override float CostFunction()
         {

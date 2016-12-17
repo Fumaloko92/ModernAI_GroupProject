@@ -21,7 +21,7 @@ namespace ThreadSafe
 
         protected override void init(AIController agent)
         {
-            
+
 
             targetResource = agent.mWorld.GetRandomResource(); //gets random ressource
 
@@ -39,33 +39,32 @@ namespace ThreadSafe
                 cost = 10000;
                 agent.state = AIController.states.failed;
             }
-            
-            agent.AddHealth(-cost - 0.1F);
+
+            agent.AddHealth(healthCost);
         }
         protected override void running(AIController agent)
         {
-                //run teleport
-                if (targetResource != null)
-                {
-                    agent.pos = targetResource.GetPosition(); //teleport to resource
+            //run teleport
+            if (targetResource != null)
+            {
+                agent.pos = targetResource.GetPosition(); //teleport to resource
 
-                    agent.collectedResources.Add(targetResource); //collect to inventory
-                    agent.mWorld.RemoveFromResourcePool(targetResource); //remove from world
+                agent.collectedResources.Add(targetResource); //collect to inventory
+                agent.mWorld.RemoveFromResourcePool(targetResource); //remove from world
 
-                    agent.state = AIController.states.succesful; //success
-                }
-                else
-                {
-                agent.AddHealth(-10000);
+                agent.state = AIController.states.succesful; //success
+            }
+            else
+            {
                 agent.state = AIController.states.failed; //fail
-                }
+            }
         }
         protected override void succesful()
         {
         }
         protected override void failed()
         {
-            
+
         }
         public override void reset()
         {
@@ -74,7 +73,7 @@ namespace ThreadSafe
 
         public override float RewardFunction(AIController agent) //reward function
         {
-            return  rewardMultiplier;
+            return rewardMultiplier;
         }
         public override float CostFunction()
         {

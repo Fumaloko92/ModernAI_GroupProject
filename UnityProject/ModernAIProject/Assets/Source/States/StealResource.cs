@@ -46,7 +46,7 @@ public class StealResource : State {
 
                 agent.collectedResources.Add(ress); //add resource to my own inventory
                 targetVillager.collectedResources.Remove(ress); //remove from his inventory
-                Debug.Log(agent.gameObject.name + ": Steal");
+                //Debug.Log(agent.gameObject.name + ": Steal");
                 agent.state = AIController.states.succesful; //success
             }
         }
