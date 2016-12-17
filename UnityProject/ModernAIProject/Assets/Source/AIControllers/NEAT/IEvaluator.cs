@@ -23,5 +23,8 @@ public interface IEvaluator
     int GetAliveMembersCount();
 
     float GetFinalFitness();
+
+    AIController GetMemberR(int id);
+    void InitWorld(World world);
 }
 

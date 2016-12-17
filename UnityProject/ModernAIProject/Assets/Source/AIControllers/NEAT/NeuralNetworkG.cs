@@ -128,6 +128,30 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
             Debug.Log(e.ToString());
         }
     }
+
+    public void RunAndEvaluate(Dictionary<int, double> inputValues, int internalPopulation, World world)
+    {
+        try
+        {
+            if (!connectionsGenotype.IsEmpty())
+            {
+                NeuralNetwork<Sigmoid, Sigmoid> phenotype = GetPhenotype();
+                foreach (int key in inputValues.Keys)
+                    phenotype.SetData(key, inputValues[key]);
+
+                Evaluator.InitAIs(internalPopulation);
+                Evaluator.InitWorld(world);
+
+                fitness = Evaluator.Evaluate(phenotype.ExecuteNetwork());
+            }
+            else
+                fitness = float.MinValue;
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e.ToString());
+        }
+    }
     public void RunAndEvaluateNEAT(Dictionary<int, double> inputValues, int internalPopulation, ThreadSafe.World world)
     {
         List<ThreadSafe.State> states = new List<ThreadSafe.State>();
@@ -240,6 +264,133 @@ public class NeuralNetworkG<T, K, A, A1, E> : IGenotype<T, K, A, A1> where T : I
                         }
                         //Debug.Log(aic.GetHealth() + " " + aic.getCurState().ToString());
                         aic.state = ThreadSafe.AIController.states.init;
+
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Log(e.ToString());
+                    }
+                }
+            }
+
+
+        }
+
+        fitness = Evaluator.GetFinalFitness();
+    }
+
+    public void RunAndEvaluateNEAT(Dictionary<int, double> inputValues, int internalPopulation, World world)
+    {
+        List<State> states = new List<State>();
+        CollectResource clr = new CollectResource(1);
+        ConsumeResource csr = new ConsumeResource(1);
+        AttackVillager av = new AttackVillager(1);
+        StealResource sr = new StealResource(1);
+        states.Add(clr);
+        states.Add(csr);
+        states.Add(av);
+        states.Add(sr);
+
+
+        Evaluator.InitAIs(internalPopulation);
+        Evaluator.InitWorld(world);
+
+        bool alive = true;
+        int counter = 0;
+        while (alive)
+        {
+            counter++;
+            alive = false;
+
+            int memberSize = Evaluator.GetMembersCount();
+            for (int i = 0; i < memberSize; i++)
+            {
+                AIController aic = Evaluator.GetMemberR(i);
+
+                //Debug.Log("Analyzing " + i + " member");
+                if (aic != null && aic.GetHealth() > 0)
+                {
+                    alive = true;
+
+                    try
+                    {
+                        inputValues = new Dictionary<int, double>();
+                        inputValues.Add(0, aic.GetHealth());
+                        inputValues.Add(1, aic.maxHealth);
+                        if (aic.mWorld == null)
+                            inputValues.Add(2, 0);
+                        else
+                            inputValues.Add(2, aic.mWorld.GetResourceCount());
+                        inputValues.Add(3, aic.collectedResources.Count);
+                        inputValues.Add(4, Evaluator.GetAliveMembersCount());
+
+                        NeuralNetwork<Sigmoid, Sigmoid> phenotype = GetPhenotype();
+                        foreach (int key in inputValues.Keys)
+                            phenotype.SetData(key, inputValues[key]);
+
+                        Dictionary<int, double> stateValues = phenotype.ExecuteNetwork();
+
+                        float clrNum = 0;
+                        float csrNum = 0;
+                        float avNum = 0;
+                        float srNum = 0;
+
+                        if (stateValues.ContainsKey(5))
+                            clrNum = (float)stateValues[5];
+
+                        if (stateValues.ContainsKey(6))
+                            csrNum = (float)stateValues[6];
+
+                        if (stateValues.ContainsKey(7))
+                            avNum = (float)stateValues[7];
+
+                        if (stateValues.ContainsKey(8))
+                            srNum = (float)stateValues[8];
+
+
+                        float highestNum = float.MinValue;
+                        State stateToRun = clr;
+
+                        if (clrNum > highestNum)
+                        {
+                            stateToRun = new CollectResource(10000);
+                            highestNum = clrNum;
+                        }
+
+                        if (csrNum > highestNum)
+                        {
+                            stateToRun = new ConsumeResource(100000);
+                            highestNum = csrNum;
+                        }
+
+                        if (avNum > highestNum)
+                        {
+                            stateToRun = new AttackVillager(100000);
+                            highestNum = avNum;
+                        }
+
+                        if (srNum > highestNum)
+                        {
+                            stateToRun = new StealResource(100000);
+                            highestNum = srNum;
+                        }
+
+
+                        aic.timeAlive += 1f;
+
+                        aic.setCurState(stateToRun);
+                        if (aic.getCurState() == null)
+                            throw new Exception();
+                        while (aic.state != AIController.states.succesful && aic.state != AIController.states.failed && aic.getCurState() != null)
+                        {
+
+                            lock (aic)
+                            {
+                                aic.getCurState().execute(aic);
+                            }
+                        }
+                        //Debug.Log(aic.GetHealth() + " " + aic.getCurState().ToString());
+                        aic.state = AIController.states.init;
 
                     }
                     catch (Exception e)

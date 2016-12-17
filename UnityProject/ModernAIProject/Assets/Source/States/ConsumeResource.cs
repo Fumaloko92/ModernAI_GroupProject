@@ -11,62 +11,68 @@ public class ConsumeResource : State {
      */
     Resource targetResource = null;
 
-    public ConsumeResource(AIController agent, float rewardMultiplier)
+    public ConsumeResource(float rewardMultiplier)
     {
-        this.agent = agent;
         this.rewardMultiplier = rewardMultiplier;
     }
 
-    protected override void init()
+    protected override void init(AIController agent)
     {
         targetResource = agent.PopResource(); //take resource from the top of inventory
+        cost = 1 / float.MaxValue;
 
         if (targetResource != null) //if we got something
         {
-            state = states.running; //then continue running
+            agent.state = AIController.states.running; //then continue running
         }
         else
         {
-            state = states.failed; //else fail
+            agent.AddHealth(healthCost);
+            agent.state = AIController.states.failed; //else fail
         }
-
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "executing ConsumeResource");
     }
-    protected override void running()
+    protected override void running(AIController agent)
     {
-        if(targetResource != null)
+        if (targetResource != null)
         {
-            //health penalty
-            agent.AddHealth(0.25F);
-
+            //health reward
+            agent.AddHealth(-cost + 0.25F);
+            Debug.Log(agent.gameObject.name + ": Consume");
             //consume
-            state = states.succesful;
+            agent.state = AIController.states.succesful;
         }
         else
         {
             //health penalty
-            agent.AddHealth(-0.25F);
+            agent.AddHealth(healthCost);
 
-            state = states.failed;
+            agent.state = AIController.states.failed;
         }
     }
     protected override void succesful()
     {
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "succesful ConsumeResource");
+        
     }
     protected override void failed()
     {
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "failed ConsumeResource");
+
     }
     public override void reset()
     {
         targetResource = null;
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "state reset");
-        state = states.init;
     }
 
-    public override float RewardFunction() //reward function
+    public override float RewardFunction(AIController agent) //reward function
     {
         return (REWARD_VALUE * (agent.GetHealth())) * rewardMultiplier;
+    }
+    public override float CostFunction()
+    {
+        return cost;
+    }
+
+    public override string ToString()
+    {
+        return "Consume Resource";
     }
 }

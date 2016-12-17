@@ -1,62 +1,111 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class QTable<T>
 {
+    private List<T> states;
+
     //private NetworkGrid<T> statesTransitions;
     private Dictionary<T, Dictionary<T, float>> qValues;
     private Dictionary<T, int> visitedTimes;
     private float learningRate = 1;
     private float discountFactor = 0.95f;
 
-    //private Executor executor;
-    private AIController agent;
-
-    public QTable(AIController agent)
+    public QTable(List<T> states)
     {
-        this.agent = agent;
         visitedTimes = new Dictionary<T, int>();
-        //statesTransitions = new NetworkGrid<T>(matrix);
-
+        this.states = new List<T>();
+        foreach (T state in states)
+            this.states.Add(state);
         qValues = new Dictionary<T, Dictionary<T, float>>();
     }
 
+    //used in the start to select a random start state
+    public T GetRandomState()
+    {
+        int rndIndex = StaticRandom.Rand(0, GetStatesCount());
+        T state;
+        try
+        {
+            state = states[rndIndex];
+        }
+        catch (Exception e)
+        {
+            string s = e.ToString();
+            return default(T);
+        }
+        // Debug.Log("getting random state: " + state + " in " + rndIndex);
+        return state;
+    }
+    public int GetStatesCount() //number of available states
+    {
+        return states.Count;
+    }
+
+    public void AddState(T state)
+    {
+        states.Add(state);
+    }
+    /* public T GetNextState(T currentState)
+     {
+         T to;
+         //Explore if it's the firsState time thaState you visiState this state
+         if (!qValues.ContainsKey(currentState))
+         {
+             to = Explore(currentState);
+             UpdateVisitedTimes(to);
+             if(to != null) return to;
+         }
+         //ExploiState if you explored all the possible action/states from this state
+         if (GetNumberOfConnectionExploredFromState(currentState) == agent.GetStatesCount())//statesTransitions.GetNodesConnectedFrom(currentState).Count)
+         {
+             to = Exploit(currentState);
+             UpdateVisitedTimes(to);
+             if (to != null) return to;
+         }
+         //Explore if a random number between 0 and 100 is less than a number which increases the less connections from the currentState have been explored
+         if (StaticRandom.Sample() < (1 - GetNumberOfConnectionExploredFromState(currentState) / agent.GetStatesCount()))
+         {
+             to = Explore(currentState);
+             UpdateVisitedTimes(to);
+             if (to != null) return to;
+         }
+         //Explore with a random(low) chance
+         if (StaticRandom.Sample() < 0.2)
+         {
+             to = Explore(currentState);
+             UpdateVisitedTimes(to);
+             if (to != null) return to;
+         }
+         //Else exploit
+         to = Exploit(currentState);
+         UpdateVisitedTimes(to);
+         return to;
+     }*/
 
     public T GetNextState(T currentState)
     {
         T to;
-        //Explore if it's the firsState time thaState you visiState this state
         if (!qValues.ContainsKey(currentState))
         {
             to = Explore(currentState);
             UpdateVisitedTimes(to);
-            return to;
+            if (to != null) return to;
         }
-        //ExploiState if you explored all the possible action/states from this state
-        if (GetNumberOfConnectionExploredFromState(currentState) == agent.GetStatesCount())//statesTransitions.GetNodesConnectedFrom(currentState).Count)
+        if (StaticRandom.Sample() < 0.3)
+        {
+            to = Explore(currentState);
+            UpdateVisitedTimes(to);
+            if (to != null) return to;
+        }
+        else
         {
             to = Exploit(currentState);
             UpdateVisitedTimes(to);
             return to;
         }
-        //Explore if a random number between 0 and 100 is less than a number which increases the less connections from the currentState have been explored
-        if (StaticRandom.Rand(0, 10000) % 101 < (1 - GetNumberOfConnectionExploredFromState(currentState) / agent.GetStatesCount()) * 100)
-        {
-            to = Explore(currentState);
-            UpdateVisitedTimes(to);
-            return to;
-        }
-        //Explore with a random(low) chance
-        if (StaticRandom.Rand(0, 10000) % 101 < 20)
-        {
-            to = Explore(currentState);
-            UpdateVisitedTimes(to);
-            return to;
-        }
-        //Else exploit
-        to = Exploit(currentState);
-        UpdateVisitedTimes(to);
         return to;
     }
 
@@ -78,23 +127,22 @@ public class QTable<T>
     private T Explore(T currentState)
     {
         //get all states
-        List<T> l = agent.GetStates() as List<T>;// statesTransitions.GetNodesConnectedFrom(currentState);
+        List<T> l = new List<T>(states);// statesTransitions.GetNodesConnectedFrom(currentState);
 
-
-        List<T> toVisit = new List<T>();
+        List<T> toVisit = new List<T>(states);
         if (!qValues.ContainsKey(currentState))
         {
             //if current state doesn't exist in the q table, then choose a random state as next state
-            toVisit = agent.GetStates() as List<T>;//statesTransitions.GetNodesConnectedFrom(currentState));
+            //statesTransitions.GetNodesConnectedFrom(currentState));
             return toVisit[StaticRandom.Rand(0, toVisit.Count)];
         }
-        List<T> list = agent.GetStates() as List<T>;
+        List<T> list = new List<T>(states);
         //otherwise choose random of states that hasn't been visited yet
         foreach (T node in list)//statesTransitions.GetNodesConnectedFrom(currentState))
             if (!qValues[currentState].ContainsKey(node))
                 toVisit.Add(node);
 
-        return toVisit[StaticRandom.Rand(0, toVisit.Count)];
+        return l[StaticRandom.Rand(0, l.Count)];
     }
 
     private T Exploit(T currentState)

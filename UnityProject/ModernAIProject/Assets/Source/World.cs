@@ -7,7 +7,11 @@ public class World : MonoBehaviour {
     private List<Vector3> resourcePositions;
     public List<Vector3> ResourcePositions { get { return resourcePositions; } }
 
-    private List<Resource> ressources = new List<Resource>();
+    private List<Resource> resources = new List<Resource>();
+    public void setResources(List<Resource> resources)
+    {
+        this.resources = resources;
+    }
     private int resourceCount;
     public int ResourceCount { get { return resourceCount; } }
 
@@ -15,6 +19,8 @@ public class World : MonoBehaviour {
     private Vector2 terrainSize;
     public Vector2 TerrainSize { get { return terrainSize; } }
 
+    public Material collectedMat;
+    public Material normalMat;
     void Awake () {
 
         terrain = GameObject.FindGameObjectWithTag("Terrain");
@@ -34,9 +40,11 @@ public class World : MonoBehaviour {
 
             GameObject resObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             resObject.transform.position = pos;
+            resObject.transform.localScale = new Vector3(5, 1, 5);
+            resObject.GetComponent<MeshRenderer>().material = normalMat;
             resObject.AddComponent<Food>();
 
-            ressources.Add(resObject.GetComponent<Resource>());
+            resources.Add(resObject.GetComponent<Resource>());
 
             resourceCount--;
         }
@@ -82,7 +90,7 @@ public class World : MonoBehaviour {
     {
         List<Resource> availableRes = new List<Resource>();
 
-        foreach (Resource ress in ressources)
+        foreach (Resource ress in resources)
         {
             if (!ress.isTaken())
             {
@@ -97,7 +105,7 @@ public class World : MonoBehaviour {
     {
         bool available = false;
 
-        foreach (Resource ress in ressources)
+        foreach (Resource ress in resources)
         {
             if (!ress.isTaken())
             {
@@ -110,25 +118,30 @@ public class World : MonoBehaviour {
     }
     public void RemoveFromResourcePool(Resource resource)
     {
-        foreach(Resource ress in ressources)
+        foreach (Resource ress in resources)
         {
-            if(ress.GetInstanceID().Equals(resource.GetInstanceID()))
+            if (ress.GetHashCode().Equals(resource.GetHashCode()))
             {
                 //remove resource from world - disabled for testing purposes
-                /*
-                Debug.Log("removed resource: " + resource.GetInstanceID());
-                resource.SetTaken(true);
-                place.RemoveResource(resource);
-                resource.gameObject.name = "Taken Resource";
-                resource.GetComponent<MeshRenderer>().material.color = Color.red;
 
-                //testing
-                Destroy(resource.gameObject);*/
+                resource.SetTaken(true);
+                resource.GetComponent<MeshRenderer>().material = collectedMat;
             }
         }
             
     }
 
-    
+    public int GetResourceCount()
+    {
+        int count = 0;
+        foreach (Resource ress in resources)
+        {
+            if (!ress.isTaken())
+            {
+                count++;
+            }
+        }
+        return count;
+    }
 }
 

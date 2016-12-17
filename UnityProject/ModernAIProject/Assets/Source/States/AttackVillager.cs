@@ -11,88 +11,71 @@ public class AttackVillager : State {
      */
 
     AIController targetVillager = null;
-    public AttackVillager(Executor executor, AIController agent, float rewardMultiplier)
+    public AttackVillager(float rewardMultiplier)
     {
-        this.executor = executor;
-        this.agent = agent;
         this.rewardMultiplier = rewardMultiplier;
     }
 
-    protected override void init()
+    protected override void init(AIController agent)
     {
-        //health penalty
-        agent.AddHealth(-0.25F);
+        targetVillager = agent.getMyGroup().getRandomVillager(); //gets random villager
 
-        //get a random villager in the world
-        targetVillager = executor.GetRandomVillager(agent);
+        if (targetVillager != null && targetVillager != agent) //if there is an villager in the would
+        {
+            cost = Vector3.Distance(agent.pos, targetVillager.pos) / float.MaxValue;
 
-        //if there is villagers then continue running the state
+            agent.state = AIController.states.running; //then start running
+        }
+        else //else fail
+        {
+            cost = 10000;
+            agent.state = AIController.states.failed;
+        }
+
+        agent.AddHealth(healthCost);
+    }
+    protected override void running(AIController agent)
+    {
+        //run navagent
         if (targetVillager != null)
         {
-            state = states.running;
-        }
-        else //otherwise fail it
-        {
-            state = states.failed;
-        }
-
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "executing AttackVillager");
-    }
-    protected override void running()
-    {
-        if(executor.testModeON)
-        {
-            //run teleport
-            if (targetVillager != null)
+            agent.myAgent.SetDestination(targetVillager.transform.position);
+            if (agent.myAgent.remainingDistance < agent.transform.localScale.x * 2F) //agent.transform.localScale.x*1.5F makes sure fat villagers still can kill someone
             {
-                agent.transform.position = targetVillager.GetPositionInWorld(); //teleport to target villager
-
-                executor.KillVillager(targetVillager); //kill it
-
-                state = states.succesful; //success
+                targetVillager.AddHealth(-5); //kills off the agent. maybe it should only damage it?
+                Debug.Log(agent.gameObject.name+": Attack");
+                agent.state = AIController.states.succesful; //success
             }
-            else
-            {
-                state = states.failed; //failed
-            }
-
         }
         else
         {
-            //run navagent
-            if (targetVillager != null)
-            {
-                agent.myAgent.SetDestination(targetVillager.GetPositionInWorld());
-                if (agent.myAgent.remainingDistance < agent.transform.localScale.x * 1.5F) //agent.transform.localScale.x*1.5F makes sure fat villagers still can kill someone
-                {
-                    executor.KillVillager(targetVillager); //kill villager
-                    
-                    state = states.succesful; //success
-                }
-            }
-            else
-            {
-                state = states.failed; //Fail
-            }
+            //agent.AddHealth(-10000);
+            agent.state = AIController.states.failed; //fail
         }
     }
     protected override void succesful()
     {
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "succesful AttackVillager");
+        
     }
     protected override void failed()
     {
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "failed AttackVillager");
     }
-    public override void reset() //resets values, so the state is ready for another use
+    public override void reset()
     {
         targetVillager = null;
-        Debug.Log("[" + agent.gameObject.GetInstanceID() + "] " + "state reset");
-        state = states.init;
     }
 
-    public override float RewardFunction() //reward function
+    public override float RewardFunction(AIController agent) //reward function
     {
         return (REWARD_VALUE * (agent.GetHealth())) * rewardMultiplier;
+    }
+    public override float CostFunction()
+    {
+        return cost;
+    }
+
+    public override string ToString()
+    {
+        return "Attack Villager";
     }
 }
