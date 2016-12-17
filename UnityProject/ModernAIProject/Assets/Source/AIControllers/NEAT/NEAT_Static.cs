@@ -16,6 +16,6 @@ public class NEAT_Static{
     public static float randomlyGenerateNodeProbability = 0.2f;
     public static float randomlyGenerateConnectionProbability = 0.6f;
     public static float crossoverProbability = 0.4f;
-    public static float selectionRangeForCrossover = 0.25f;
+    public static float selectionRangeForCrossover = 0.05f;
 
 }

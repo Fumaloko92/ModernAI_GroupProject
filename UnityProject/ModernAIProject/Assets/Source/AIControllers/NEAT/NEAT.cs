@@ -133,7 +133,9 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
                     if (StaticRandom.Sample() < NEAT_Static.crossoverProbability)
                     {
                         int selectedLength = (int)(toEvolve.Count * NEAT_Static.selectionRangeForCrossover);
-                        T clone1 = (T)toEvolve[StaticRandom.Rand(0, selectedLength)].Clone();
+                        int parentIndex = StaticRandom.Rand(0, selectedLength);
+                            //Debug.Log("I am making the crossover between " + k +" and " + parentIndex);
+                        T clone1 = (T)toEvolve[parentIndex].Clone();
                         if (!t1.IsAlive)
                         {
                             t1 = new Thread(o => instance.NeatInnerCrossoverLoop(clone, clone1, i));
@@ -147,6 +149,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
                     }
                     else
                     {
+                      //  Debug.Log("I am mutating " + k);
                         if (!t1.IsAlive)
                         {
                             t1 = new Thread(o => instance.NeatInnerEvolvingLoop(clone, i));
@@ -161,6 +164,7 @@ public class NEAT<T, T1, K, A, A1> where T : IGenotype<T1, K, A, A1>, new() wher
                 }
                 else
                 {
+                   // Debug.Log("I am regenerating the individual number " + k);
                     while (t1.IsAlive && t2.IsAlive) ;
                     if (!t1.IsAlive)
                     {
